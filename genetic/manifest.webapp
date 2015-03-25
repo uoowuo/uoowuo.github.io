@@ -1,0 +1,15 @@
+﻿{
+  "name": "Genetic demo",
+  "description": "Uses a simple genetic algorithm to evolve a population of random strings into a population of target strings. Inspired by Richard Dawkins' weasel program.",
+  "launch_path": "/index.html",
+  "version": "1.0",
+  "developer": {
+    "name": "Denis Shmakov",
+    "url": "https://www.linkedin.com/pub/denis-shmakov/72/a9/7b"
+  },
+  "icons": {
+    "32": "/images/favicon.png",
+  },
+  "default_locale": "en",
+  "fullscreen": "true"
+}

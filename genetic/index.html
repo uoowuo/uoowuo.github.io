@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="Genetic algorithms on canvas" name="description">
+    <meta content="genetics" name="keywords">
+    <title>Genetic algorithms on canvas</title>
+    <link href="./images/favicon.png" rel="SHORTCUT ICON" type="image/png">
+    <link href="./css/main.css" rel="stylesheet" type="text/css">
+</head>
+<body id="top">
+    <article class="input toolBar">
+        <input type="text" class="input" name="input" data-input="target" placeholder="Confront your fears" value="In his house at R'lyeh, dead Cthulhu waits dreaming.">
+        <button class="defaultButton execute action" data-action="restartAlgorithm">Crawl&nbsp;&raquo;</button>
+    </article>
+    <article class="mainArea" role="main" data-view="main">
+        <span class="loadingIndicator probe"></span>
+        <article class="loadingIndicator widget">
+            <section class="shadow"></section>
+            <section class="backlight"></section>
+            <section class="body"></section>
+        </article>
+        <section class="textView"></section>
+        <canvas class="mainSurface"></canvas>
+    </article>
+    <script src="./js/app.js"></script>
+</body>
+</html>
+<!-- hack -->
+<script>
