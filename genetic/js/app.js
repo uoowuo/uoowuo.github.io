@@ -1,5 +1,5 @@
 ﻿/* 
- * Genetic algorithms on canvas, v1.2.7
+ * Genetic algorithms on canvas, v1.2.8
  *
  * Description: Uses a simple genetic algorithm to evolve a population of random strings
  * into a population of target strings. Inspired by Richard Dawkins' weasel program.
@@ -10,7 +10,7 @@
  * autooptimization at runtime by min amount of time until target
  * a real molecule is both data and processor
  * evolvable evolution framework?
- * randomness seems to be broken somewhere: last char often found with sample string from v0.1
+ * randomness may be broken somewhere: last char often found with sample string from v0.1
  * overall efficiency NaN in background tabs?
  * that pixel in last graph iteration
  * clearCanvas style setting not implemented
@@ -532,7 +532,7 @@
                 app.mutating.startAlgorithmRun();
             },
 
-            // restart on execute button press or enter
+            // restart on button press or enter
             function () {
                 var restartHandler = function () {
                     app.input.target = document.querySelector('[data-input="target"]').value;
