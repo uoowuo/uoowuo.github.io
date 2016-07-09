@@ -43463,7 +43463,7 @@ var Sonografi = function () {
         this.ocean = this.makeSphere(1.3, 5, _shaders2.default.vertex.wavy, _shaders2.default.pixel.oceanic, THREE.FrontSide, true);
         this.ocean.renderOrder = 2;
         this.viewport.scene.add(this.sky, this.ocean);
-        this.loadModel('./models/earth.stl', 1.3, _shaders2.default.vertex.extruded, _shaders2.default.pixel.disco, THREE.FrontSide, true).then(function (model) {
+        this.loadModel('./models/earth.stl', 1.3, _shaders2.default.vertex.extruded, _shaders2.default.pixel.disco, THREE.DoubleSide, true).then(function (model) {
 
             // Add the Earth
             closureThis.earth = model;
