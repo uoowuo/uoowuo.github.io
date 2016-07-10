@@ -43156,7 +43156,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 // Application start //
 ///////////////////////
 /**
- * Sonografi, v1.1.0
+ * Sonografi, v1.2.0
  *
  * Description: Audio visualizer webapp made of ES2015 and WebGL.
  * License: GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -43225,6 +43225,16 @@ var Shaders = function Shaders() {
 
 Shaders.libs = {};
 
+/**
+ * That number, you know
+ */
+Shaders.libs.PI = "\n    #define PI 3.1415926535897932384626433832795\n";
+
+/**
+ * Analysis resolution settings
+ */
+Shaders.libs.resolutionSettings = "\n    #define amplitudeResolution 64\n    #define frequencyResolution 128\n";
+
 /////////////////////
 // Vertex shaders //
 ///////////////////
@@ -43248,7 +43258,7 @@ Shaders.vertex.wavy = "\n    uniform float time;\n    uniform float amplitude;\n
 /**
  * Outward face extrusion
  */
-Shaders.vertex.extruded = "\n    varying vec3 vNormal;\n    uniform float time;\n    uniform float amplitude;\n    uniform vec3 earthOrigin;\n    varying vec3 vPosition;\n    \n    // Pseudorandom function\n    float pRandom (vec3 coords) {\n        return fract(sin(dot(coords.xyz, vec3(12.9898, 78.233, 12.9898))) * 43758.5453);\n    }\n\n    void main() {\n        vNormal = normal;      // Vertex normal\n        vPosition = position;  // Vertex position\n        const float extrudeHeight = 2.5;\n        vec3 finalPosition;\n        \n        // Radius vector starting at object origin and pointing towards the current vertex\n        // We will use it to detect vertices whose normals point outwards \n        vec3 refNormal = normalize(position - earthOrigin);\n        \n        // Extrude faces whose normals point outwards\n        if (length(refNormal - normal) < 1.4) {\n            finalPosition = position + refNormal * pow(amplitude, 3.0) * extrudeHeight / 4096.0;\n            // finalPosition = position + normal * pow(amplitude, 2.0) * extrudeHeight * sin(pRandom(position)) / 900.0;\n        } else {\n            finalPosition = position;\n        }\n             \n        gl_Position = projectionMatrix * modelViewMatrix * vec4(finalPosition, 1.0);\n    }\n";
+Shaders.vertex.extruded = "\n    " + Shaders.libs.PI + "\n    " + Shaders.libs.resolutionSettings + "\n    varying vec3 vNormal;\n    uniform float time;\n    uniform float amplitude;\n    uniform float amplitudes[amplitudeResolution];\n    uniform float frequency;\n    uniform float frequencies[frequencyResolution];\n    uniform vec3 earthOrigin;\n    varying vec3 vPosition;\n    \n    // Pseudorandom function\n    float pRandom (vec3 coords) {\n        return fract(sin(dot(coords.xyz, vec3(12.9898, 78.233, 12.9898))) * 43758.5453);\n    }\n\n    void main() {\n        vNormal = normal;                 // Vertex normal\n        vPosition = position;             // Vertex position\n        const float extrudeHeight = 2.5;  // Fixed height modifier for extrusions\n        const vec3 rippleStartNormal = vec3(0.0, 1.0, 0.0);  // Vector pointing at the starting point of extrusion ripples\n        float polarCoordPosition;         // Position of a vertex in polar coordinate system with origin at rippleStartNormal angle;\n        vec3 refNormal;                   // Radius vector starting at object origin and pointing towards the current vertex. We will use\n                                          // it to detect vertices whose normals point outwards\n        float extrusionFactor;            // Dynamic extrusion height modifier\n        vec3 finalPosition;               // End result\n        \n        refNormal = normalize(position - earthOrigin);\n        // polarCoordPosition = acos(dot(rippleStartNormal, refNormal)) / PI;  // Origin at pole\n        polarCoordPosition = abs((acos(dot(rippleStartNormal, refNormal)) / PI) - 0.5) * 2.0;  // Origin at equator\n        extrusionFactor = frequencies[int(polarCoordPosition * float(frequencyResolution))] / 19.0;\n               \n        // Extrude faces whose normals point outwards\n        if (length(refNormal - normal) < 1.4) {\n            finalPosition = position + refNormal * pow(extrusionFactor, 3.0) * extrudeHeight * sin(pRandom(vec3(time, position.x, position.y))) / 16384.0;  // Fire\n            // finalPosition = position + refNormal * pow(extrusionFactor, 3.0) * extrudeHeight / 16384.0;\n        } else {\n            finalPosition = position;\n        }\n             \n        gl_Position = projectionMatrix * modelViewMatrix * vec4(finalPosition, 1.0);\n    }\n";
 
 ////////////////////
 // Pixel shaders //
@@ -43261,18 +43271,15 @@ Shaders.vertex.extruded = "\n    varying vec3 vNormal;\n    uniform float time;\
 Shaders.pixel = {}; // Pixel shaders
 
 /**
- * Waterlike legacy
- */
-Shaders.pixel.oceanicMid = "\n    varying vec3 vNormal;\n    uniform float time;\n    uniform float screenHeight;\n    \n    void main() {\n    \n        vec3 ambientLight = vec3(0.0, 0.0, 0.1);  // Ambient blue\n        \n        // Positional light data type\n        struct Light {\n            vec3 position;      // Position in 3D\n            vec3 color;         // Color code\n            float illumFactor;  // How much this light shines upon current pixel\n        };\n        \n        // Define positional lights\n        const int lightsLength = 6;\n        Light lights[lightsLength];\n        \n        vec3 cyan = vec3(0.0, 0.75, 1.0);\n        vec3 blue = vec3(0.0, 0.0, 1.0);\n        vec3 darkBlue = vec3(0.0, 0.0, 0.4);\n        vec3 black = vec3(0.0, 0.0, 0.0);\n        \n        lights[0].position = normalize(vec3(0.0,  1.0,  0.0));   // Top\n        lights[1].position = normalize(vec3(0.0, -1.0,  0.0));   // Bottom\n        lights[2].position = normalize(vec3(0.0,  0.0,  1.0));   // Front\n        lights[3].position = normalize(vec3(0.0,  0.0,  -1.0));  // Back\n        lights[4].position = normalize(vec3(1.0,  0.0, 0.0));    // Right\n        lights[5].position = normalize(vec3(-1.0, 0.0, 0.0));    // Left\n        \n        lights[0].color = cyan;\n        lights[1].color = cyan;\n        lights[2].color = blue;\n        lights[3].color = blue;\n        lights[4].color = cyan;\n        lights[5].color = cyan;\n        \n        // Compute light illumination factors for every light\n        for (int i = 0; i < lightsLength; i++) {\n            lights[i].illumFactor = max(0.0, dot(vNormal, lights[i].position));\n        }\n        \n        // Reduce everything to a color vector by multiplying R, G & B components of lights\n        // by their illumination factors and adding it all up\n        vec3 illum = vec3(0.0);\n        for (int n = 0; n < 3; n++) {\n            for (int i = 0; i < lightsLength; i++) {\n                illum[n] += lights[i].color[n] * lights[i].illumFactor;\n            }\n        }\n        \n        // Add ambient light and output\n        illum = illum + ambientLight;\n        gl_FragColor = vec4(illum, 0.8);\n    }\n";
-
-/**
  * Waterlike, with depth
  * @todo make water under camera transparent too, z-clip stuff perhaps
+ * @todo add wave speculars
  */
-Shaders.pixel.oceanic = "\n\n    const int gradientColorCount = 4;  // Number of gradient colors in use\n    \n    uniform float time;\n    uniform float screenHeight;\n    uniform vec3 oceanOrigin;                         // Object center in world space\n    uniform vec3 gradientColors[gradientColorCount];  // Array of colors for radial gradient\n    uniform float gradientStops[gradientColorCount];  // Color positions for radial gradient \n    varying vec3 vNormal;                             // Surface normal in object space\n    varying vec3 vWorldNormal;                        // Surface normal in world space\n    \n    void main() {\n    \n        float depth;           // Apparent water depth at point\n        float gradientPoint;   // Position of the current point within the gradient, 0..1\n        vec3 gradientFactors;  // How much of every gradient color is at this point \n        vec3 gradient;         // Computed gradient color for current pixel\n        // vec3 ambientLight = vec3(0.0, 0.0, 0.1);  // Ambient lighting to add\n        vec3 ambientLight = vec3(0.0);  // Ambient lighting to add\n    \n        vec3 cameraDirection = normalize(cameraPosition - oceanOrigin);  // Points from object center to camera\n        depth = 1.0 - length(vWorldNormal - cameraDirection);  // Depth increases towards object center\n        gradientPoint = (1.0 - depth);                                   // Gradient goes from depth to shallow\n        \n        // Compute gradient factors based on gradient stops and current point's position \n        for (int grad = 0; grad < gradientColorCount; grad++) {\n            gradientFactors[grad] = 1.0 - abs(gradientStops[grad] - gradientPoint);\n        }\n        \n        // Compute gradient by multiplying R, G & B components of gradient colors\n        // by their gradient factors and adding it all up\n        for (int col = 0; col < 3; col++) {\n            for (int grad = 0; grad < gradientColorCount; grad++) {\n                gradient[col] += gradientColors[grad][col] * gradientFactors[grad];\n            }\n        }\n   \n        // Add ambient light and depth, and output\n        // First, remove colot from the deep parts, then replace it with the depthColor\n        // illum = illum * (1.0 - depth) + depth * depthColor;\n        // illum = (illum + ambientLight) * 2.0 * (1.0 - depth) + depth * depthColor;\n        // gl_FragColor = vec4(illum, 1.0);\n        gl_FragColor = vec4(gradient + ambientLight, pow(depth, 0.8) * 4.0);\n    }\n";
+Shaders.pixel.oceanic = "\n\n    const int gradientColorCount = 4;  // Number of gradient colors in use\n    \n    uniform float time;\n    uniform float screenHeight;\n    uniform float amplitude;\n    uniform float streak;\n    uniform vec3 oceanOrigin;                         // Object center in world space\n    uniform vec3 gradientColors[gradientColorCount];  // Array of colors for radial gradient\n    uniform float gradientStops[gradientColorCount];  // Color positions for radial gradient \n    varying vec3 vNormal;                             // Surface normal in object space\n    varying vec3 vWorldNormal;                        // Surface normal in world space\n    \n    void main() {\n    \n        float depth;           // Apparent water depth at point\n        float gradientPoint;   // Position of the current point within the gradient, 0..1\n        vec3 gradientFactors;  // How much of every gradient color is at this point \n        vec3 gradient;         // Computed gradient color for current pixel\n        float luminance;       // Additional light emission\n    \n        vec3 cameraDirection = normalize(cameraPosition - oceanOrigin);  // Points from object center to camera\n        depth = 1.0 - length(vWorldNormal - cameraDirection);            // Depth increases towards object center\n        gradientPoint = (1.0 - depth);                                   // Gradient goes from depth to shallow\n        luminance = streak / 128.0;                                      // Make it glow on streak\n        \n        // Compute gradient factors based on gradient stops and current point's position \n        for (int grad = 0; grad < gradientColorCount; grad++) {\n            gradientFactors[grad] = 1.0 - abs(gradientStops[grad] - gradientPoint);\n        }\n        \n        // Compute gradient by multiplying R, G & B components of gradient colors\n        // by their gradient factors and adding it all up\n        for (int col = 0; col < 3; col++) {\n            for (int grad = 0; grad < gradientColorCount; grad++) {\n                gradient[col] += gradientColors[grad][col] * gradientFactors[grad];\n            }\n        }\n   \n        // Add luminance and depth, and output\n        gl_FragColor = vec4(gradient + luminance, pow(depth, 0.8) * 4.0);\n    }\n";
 
 /**
  * Party tiem
+ * @todo alternative shader for mobile or fix mobile other way
  */
 Shaders.pixel.disco = "\n    varying vec3 vNormal;\n    uniform float time;\n    uniform vec3 earthOrigin;\n    varying vec3 vPosition;\n    \n    void main() {\n    \n        // Radius vector starting at object origin and pointing towards the current vertex\n        // We will use it to determine illumination factor for every light \n        vec3 refNormal = normalize(vPosition - earthOrigin);\n        \n        float opacity = 1.0;  // Pixel opacity\n        float shadow  = 0.0;  // Simple fake shadow modifier\n    \n        vec3 ambientLight = vec3(0.2, 0.2, 0.0);  // Ambient yellow\n        \n        // Positional light data type\n        struct Light {\n            vec3 position;      // Position in 3D\n            vec3 color;         // Color code\n            float illumFactor;  // How much this light shines upon current pixel\n        };\n        \n        // Define positional lights\n        Light lights[5];\n        \n        lights[0].position = normalize(vec3(0.0,  1.0,  0.5));  // Top\n        lights[1].position = normalize(vec3(0.0, -1.0,  0.5));  // Bottom\n        lights[2].position = normalize(vec3(0.0,  0.0,  1.0));  // Front\n        lights[3].position = normalize(vec3(1.0,  0.0, -0.5));  // Right\n        lights[4].position = normalize(vec3(-1.0, 0.0, -0.5));  // Left\n        \n        lights[0].color = vec3(1.0, 0.0, 0.0);  // Red\n        lights[1].color = vec3(1.0, 0.5, 0.0);  // Orange\n        lights[2].color = vec3(0.35, 0.35, 0.0);  // Yellow   \n        lights[3].color = vec3(0.0, 0.8, 0.0);  // Green\n        lights[4].color = vec3(0.8, 0.0, 0.8);  // Violet\n        \n        // Rotate lights around y axis with time\n        for (int i = 0; i < 5; i++) {\n            lights[i].position[0] = lights[i].position[0] * sin(time);  // X\n            lights[i].position[2] = lights[i].position[2] * sin(time);  // Z\n        }\n        \n        // Compute light illumination factors for every light\n        for (int i = 0; i < 5; i++) {\n            lights[i].illumFactor = max(0.0, dot(refNormal, lights[i].position));\n        }\n        \n        // Reduce everything to a color vector by multiplying R, G & B components of lights\n        // by their illumination factors and adding it all up\n        vec3 illum = vec3(0.0);\n        for (int n = 0; n < 3; n++) {\n            for (int i = 0; i < 5; i++) {\n                illum[n] += lights[i].color[n] * lights[i].illumFactor;\n            }\n        }\n        \n        // Draw outward pointing transparent and dark, all others opaque and bright\n        float outwardness = 1.0 - length(refNormal - vNormal);\n        if (outwardness > 0.2) {\n            opacity = 1.0 - outwardness;\n            shadow = 0.0;\n        } else {\n            opacity = 1.0;\n            shadow = outwardness;\n        }\n        \n        // Add ambient light and shadow, and output\n        illum = (illum + ambientLight) * (1.0 - shadow);\n        gl_FragColor = vec4(illum, opacity);\n    }\n";
 
@@ -43395,6 +43402,7 @@ var STLLoader = require('three-stl-loader')(THREE);
  * @todo favicon
  * @todo reduce earth.dae size
  * @todo yslow
+ * @todo white land version as well, perhaps as reaction to amplitude buildup
  *
  * @requires  viewport
  * @requires  shaders
@@ -43436,12 +43444,16 @@ var Sonografi = function () {
         // @todo make the ocean change color to music, for epic win
         this.shaderUniforms = {
             time: this.viewport.timeUniform,
-            amplitude: this.sound.amplitudeUniform,
+            amplitude: this.sound.amplitudeUniform, // Pass-by-reference
+            amplitudes: this.sound.amplitudesUniform, // Pass-by-reference
+            frequency: this.sound.frequencyUniform, // Pass-by-reference
+            frequencies: this.sound.frequenciesUniform, // Pass-by-reference
+            streak: this.sound.streakUniform, // Pass-by-reference
             starFieldTexture: { type: 't', value: starFieldTexture },
             screenHeight: { type: 'f', value: document.body.clientHeight },
             cameraPosition: { type: 'v3', value: this.viewport.camera.position },
-            gradientColors: { type: 'v3v', value: [new THREE.Color(0x010c47), new THREE.Color(0x010c47), new THREE.Color(0x00295d), new THREE.Color(0x5ed9d5)] },
-            gradientStops: { type: 'fv', value: [0.0, 0.33, 0.66, 1.0] }
+            gradientColors: { type: 'v3v', value: [new THREE.Color(0x001551), new THREE.Color(0x001551), new THREE.Color(0x001551), new THREE.Color(0x010c47)] },
+            gradientStops: { type: 'fv', value: [0.0, 0.73, 0.96, 1.0] }
         };
 
         // Setup shared shader uniforms
@@ -43457,8 +43469,9 @@ var Sonografi = function () {
         // @todo use buffergeometry where practical
         // @todo try fresnel
         // @todo exploded colorful crap in orbit or clouds maybe or just atmosphere
+        // @todo what's with the giant ocean, maybe rotate in another axis as well to bypass it
         var EarthRotationAxis = new THREE.Vector3(0, 1, 0);
-        var rotationAngle = 0.002;
+        var rotationAngle = 0.0003;
         this.sky = this.makeSphere(80000, 1, _shaders2.default.vertex.plain, _shaders2.default.pixel.scrollingStars, THREE.BackSide);
         this.ocean = this.makeSphere(1.3, 5, _shaders2.default.vertex.wavy, _shaders2.default.pixel.oceanic, THREE.FrontSide, true);
         this.ocean.renderOrder = 2;
@@ -43751,24 +43764,25 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Sound = function () {
 
     /**
-     * Setup audio processing
+     * Sets up audio processing.
      * @todo ScriptProcessorNode is deprecated, replace it and ensure other functions are okay
+     * @todo y u no work on FF/Android
      */
 
     function Sound() {
         _classCallCheck(this, Sound);
 
-        /**
-         * Current sound amplitude.
-         * @type  {Number}
-         * @public
-         * @readonly
-         */
-        this.amplitudeUniform = { type: 'f', value: 0 }; // Shader uniform object usable by Three.js, to achieve pass-by-reference
+        var closureThis = this;
+        this.amplitudeUniform = { type: 'f', value: 0 }; // Sound amplitude digest value in Three.js shader uniform format
+        this.amplitudesUniform = { type: 'fv', value: [] }; // Sound amplitudes array in Three.js shader uniform format
+        this.frequencyUniform = { type: 'f', value: 0 }; // Sound frequency digest in Three.js shader uniform format
+        this.frequenciesUniform = { type: 'fv', value: [] }; // Sound frequencies array in Three.js shader uniform format
+        this.streakUniform = { type: 'f', value: 0 }; // Softly rising and falling streak indicator
 
         // Setup analysis
+        var fftSize = 256;
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.analyser = this.startAnalysis(this.audioContext, 256);
+        this.analyser = this.startAnalysis(this.audioContext, fftSize);
         // this.sourceBuffer = this.audioContext.createBufferSource();
 
         // Wire up source -> analyser -> destination
@@ -43779,10 +43793,41 @@ var Sound = function () {
 
         // @todo make from mic too
         this.sourceElement.play();
+
+        // Run streak detector
+        // @todo better detect based on time sequence analysis or at least determine a baselevel for the song at the start, for threshold
+        // @todo OOP this
+        // @todo it's crap, see linear regression etc.
+        var streakStack = 0;
+        var detectionThreshold = 128; // When to add excess amplitude to streakStack
+        var streakThreshold = 860; // When to start a streak
+        var streakReserve = 3000; // Streak stability to fluctuations
+        var streakGain = 1; // How fast a streak comes when amplitude increases
+        this.streakActive = false;
+        this.streakWasActive = false;
+        this.streakHandle = setInterval(function () {
+            console.log(streakStack);
+
+            // Add up to detection
+            if (closureThis.amplitudeUniform.value > detectionThreshold) {
+                streakStack = streakStack < streakReserve ? streakStack + (closureThis.amplitudeUniform.value - detectionThreshold) * streakGain : streakStack;
+            } else {
+                streakStack = streakStack > 0 ? streakStack - (detectionThreshold - closureThis.amplitudeUniform.value) : streakStack;
+            }
+
+            // Detect and start a streak or stop a running streak
+            closureThis.streakWasActive = closureThis.streakActive;
+            if (streakStack > streakThreshold) {
+                closureThis.streakActive = true; // Start the streak
+                streakStack = !closureThis.streakWasActive ? streakReserve : streakStack; // And make sure it doesn't immediately fade
+            } else {
+                    closureThis.streakActive = false; // Stop the streak
+                }
+        }, 133);
     }
 
     /**
-     * Analyzes audio stream on the given AudioContext
+     * Analyzes audio stream on the given AudioContext.
      * @todo writeme
      * @param  {Number}  fftSize  Fast Fourier Transform size = analysis resolution; must be power of 2 and twice the number of samples
      *
@@ -43800,18 +43845,35 @@ var Sound = function () {
 
             // Start analysis loop and return
             var closureThis = this;
-            var audioFrameBuffer = new Uint8Array(analyser.frequencyBinCount);
+            var audioFrameTimeBuffer = new Uint8Array(analyser.fftSize / 2);
+            var audioFrameFreqBuffer = new Uint8Array(analyser.frequencyBinCount);
+            var sum = function sum(a, b) {
+                return a + b;
+            };
             var analysisLoop = function analysisLoop() {
                 requestAnimationFrame(analysisLoop);
-                analyser.getByteFrequencyData(audioFrameBuffer);
-                closureThis.amplitudeUniform.value = (audioFrameBuffer[3] + audioFrameBuffer[30] + audioFrameBuffer[100]) / (3 * 19);
+
+                // Put data where data belongs
+                analyser.getByteTimeDomainData(audioFrameTimeBuffer);
+                analyser.getByteFrequencyData(audioFrameFreqBuffer);
+                closureThis.amplitudeUniform.value = audioFrameTimeBuffer.reduce(sum) / (analyser.fftSize / 2);
+                closureThis.amplitudesUniform.value = audioFrameTimeBuffer;
+                closureThis.frequencyUniform.value = audioFrameFreqBuffer.reduce(sum) / (analyser.fftSize / 2); // Maybe slice here too
+                closureThis.frequenciesUniform.value = audioFrameFreqBuffer.slice(Math.floor(analyser.fftSize / 64)); // Because aliasing at high frequencies
+
+                // Ramp streak up or down
+                if (closureThis.streakActive === true) {
+                    closureThis.streakUniform.value = closureThis.streakUniform.value < 127 ? closureThis.streakUniform.value + 1 : closureThis.streakUniform.value;
+                } else {
+                    closureThis.streakUniform.value = closureThis.streakUniform.value > 0 ? closureThis.streakUniform.value - 1 : closureThis.streakUniform.value;
+                }
             };
             analysisLoop();
             return analyser;
         }
 
         /**
-         * Decodes audio buffer
+         * Decodes audio buffer.
          * @todo writeme && write meaningful error handling
          * 
          * @param  buffer
@@ -43861,8 +43923,8 @@ var Util = function () {
 
 
         /**
-         * Decodes URI parameters
-         *
+         * Decodes URI parameters.
+         * @todo unused, remove
          * @returns  {Object}  An Object containing parsed URI parameters
          */
         value: function getParams() {
@@ -43894,7 +43956,7 @@ var Util = function () {
         }
 
         /**
-         * Prevents browser from playing/downloading the dragged file and allows JS handling
+         * Prevents browser from playing/downloading the dragged file and allows JS handling.
          * 
          * @param  {Event}  dragoverEvent  Dragover event object
          */
@@ -44007,7 +44069,7 @@ var Viewport = function () {
         this.renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
         this.renderer.setClearColor(color, opacity);
         this.renderer.setSize(canvas.clientWidth, canvas.clientHeight, true); // True = autoresize on
-        this.camera.position.z = 4.0;
+        this.camera.position.z = 3.8;
 
         // Start viewport animation loop
         this.startAnimationLoop();
