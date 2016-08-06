@@ -43142,10 +43142,6 @@ if (typeof exports !== 'undefined') {
 },{}],4:[function(require,module,exports){
 'use strict';
 
-var _shims = require('./classes/shims');
-
-var _shims2 = _interopRequireDefault(_shims);
-
 var _sonografi = require('./classes/sonografi');
 
 var _sonografi2 = _interopRequireDefault(_sonografi);
@@ -43155,29 +43151,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 ///////////////////////
 // Application start //
 ///////////////////////
-/**
- * Sonografi, v1.2.0
- *
- * Description: Audio visualizer webapp made of ES2015 and WebGL.
- * License: GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- *
- * @todo implement, remove stray debugger statements, add sane debugging
- * @todo module testing all the things
- * @todo testing on mobile and with low traffic, no cache
- * @todo FF memleak?
- */
-
 (function (globals) {
-
     'use strict';
 
-    // Apply shims
-    // @todo replace with modernizr
-
-    _shims2.default.preventConsoleErrors();
-    _shims2.default.forEachPolyfill();
+    // @todo apply third-party shims here with modernizr
 
     // Start the application
+
     document.addEventListener('DOMContentLoaded', function (event) {
 
         var canvas = document.querySelector('canvas#demo-scene');
@@ -43194,9 +43174,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
             sonografi.viewport.refit();
         });
     });
-})(self);
+})(self); /**
+           * Sonografi, v1.3.1
+           *
+           * Description: Audio visualizer webapp made of ES2015 and WebGL.
+           * License: GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+           *
+           * @todo implement, remove stray debugger statements, add sane debugging
+           * @todo module testing all the things
+           * @todo testing on mobile and with low traffic, no cache
+           * @todo FF memleak?
+           */
 
-},{"./classes/shims":6,"./classes/sonografi":7}],5:[function(require,module,exports){
+},{"./classes/sonografi":6}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -43213,9 +43203,9 @@ var Shaders = function Shaders() {
     _classCallCheck(this, Shaders);
 };
 
-////////////////
+///////////////
 // Libraries //
-//////////////
+///////////////
 
 /**
  * Shader library code
@@ -43235,9 +43225,9 @@ Shaders.libs.PI = "\n    #define PI 3.1415926535897932384626433832795\n";
  */
 Shaders.libs.resolutionSettings = "\n    #define amplitudeResolution 64\n    #define frequencyResolution 128\n";
 
-/////////////////////
+////////////////////
 // Vertex shaders //
-///////////////////
+////////////////////
 
 /**
  * Vertex shaders list
@@ -43253,16 +43243,16 @@ Shaders.vertex.plain = "\n    varying vec3 vNormal;\n\n    void main() {\n      
 /**
  * Waves on surface
  */
-Shaders.vertex.wavy = "\n    uniform float time;\n    uniform float amplitude;\n    varying vec3 vNormal;\n    varying vec3 vWorldNormal;\n    \n    // Pseudorandom function\n    float pRandom (vec3 coords) {\n        return fract(sin(dot(coords.xyz, vec3(12.9898, 78.233, 12.9898))) * 43758.5453);\n    }\n\n    void main() {\n        vNormal = normal;                 // Vertex normal\n        vec4 worldNormal4 = modelMatrix * vec4(normal, 1.0);  \n        vWorldNormal = worldNormal4.xyz;  // World space normal\n        \n        const float waveHeight = 0.01;  // Wave height\n        const float waveRes = 25.0;     // Wave resolution\n        const float speed = 2.0;        // Wave movement speed\n        \n        vec3 pos = position + normal * waveHeight\n            * (\n                sin(position.x * waveRes + 0.0 + time * speed)\n                + cos(position.y * waveRes + 3.0 + time * speed)\n                + cos(position.z * waveRes + 6.0 + time * speed)\n            );\n        \n        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);\n    }\n";
+Shaders.vertex.wavy = "\n    uniform float time;\n    uniform float amplitude;\n    varying vec3 vNormal;\n    varying vec3 vWorldNormal;\n    \n    // Pseudorandom function\n    float pRandom (vec3 coords) {\n        return fract(sin(dot(coords.xyz, vec3(12.9898, 78.233, 12.9898))) * 43758.5453);\n    }\n\n    void main() {\n        vNormal = normal;                 // Vertex normal\n        vec4 worldNormal4 = modelMatrix * vec4(normal, 1.0);  \n        vWorldNormal = worldNormal4.xyz;  // World space normal\n        \n        const float waveHeight = 0.01;  // Wave height\n        const float waveRes = 25.0;     // Wave resolution\n        const float speed = 2.0;        // Wave movement speed\n        \n        // Wave & output\n        vec3 pos = position + normal * waveHeight\n            * (\n                sin(position.x * waveRes + 0.0 + time * speed)\n                + cos(position.y * waveRes + 3.0 + time * speed)\n                + cos(position.z * waveRes + 6.0 + time * speed)\n            );\n            \n        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);\n    }\n";
 
 /**
  * Outward face extrusion
  */
-Shaders.vertex.extruded = "\n    " + Shaders.libs.PI + "\n    " + Shaders.libs.resolutionSettings + "\n    varying vec3 vNormal;\n    uniform float time;\n    uniform float amplitude;\n    uniform float amplitudes[32];\n    uniform float frequency;\n    uniform float frequencies[32];\n    uniform vec3 earthOrigin;\n    varying vec3 vPosition;\n    \n    // Pseudorandom function\n    float pRandom (vec3 coords) {\n        return fract(sin(dot(coords.xyz, vec3(12.9898, 78.233, 12.9898))) * 43758.5453);\n    }\n\n    void main() {\n        vNormal = normal;                 // Vertex normal\n        vPosition = position;             // Vertex position\n        const float extrudeHeight = 2.5;  // Fixed height modifier for extrusions\n        const vec3 rippleStartNormal = vec3(0.0, 1.0, 0.0);  // Vector pointing at the starting point of extrusion ripples\n        float polarCoordPosition;         // Position of a vertex in polar coordinate system with origin at rippleStartNormal angle;\n        vec3 refNormal;                   // Radius vector starting at object origin and pointing towards the current vertex. We will use\n                                          // it to detect vertices whose normals point outwards\n        float extrusionFactor;            // Dynamic extrusion height modifier\n        vec3 finalPosition;               // End result\n        \n        refNormal = normalize(position - earthOrigin);\n        // polarCoordPosition = acos(dot(rippleStartNormal, refNormal)) / PI;  // Origin at pole\n        polarCoordPosition = abs((acos(dot(rippleStartNormal, refNormal)) / PI) - 0.5) * 2.0;  // Origin at equator\n        // extrusionFactor = frequencies[int(polarCoordPosition * float(frequencyResolution))] / 19.0; // BUG: breaks in chromium\n        extrusionFactor = frequency / 14.0;\n\n               \n        // Extrude faces whose normals point outwards\n        if (length(refNormal - normal) < 1.4) {\n            finalPosition = position + refNormal * pow(extrusionFactor, 3.0) * extrudeHeight * sin(pRandom(vec3(time, position.x, position.y))) / 16384.0;  // Fire\n            // finalPosition = position + refNormal * pow(extrusionFactor, 3.0) * extrudeHeight / 16384.0;\n        } else {\n            finalPosition = position;\n        }\n             \n        gl_Position = projectionMatrix * modelViewMatrix * vec4(finalPosition, 1.0);\n    }\n";
+Shaders.vertex.extruded = "\n    " + Shaders.libs.PI + "\n    " + Shaders.libs.resolutionSettings + "\n    varying vec3 vNormal;\n    uniform float time;\n    uniform float amplitude;\n    uniform float amplitudes[32];\n    uniform float frequency;\n    uniform float frequencies[32];\n    uniform vec3 earthOrigin;\n    varying vec3 vPosition;\n    \n    // Pseudorandom function\n    float pRandom (vec3 coords) {\n        return fract(sin(dot(coords.xyz, vec3(12.9898, 78.233, 12.9898))) * 43758.5453);\n    }\n\n    void main() {\n        vNormal = normal;                 // Vertex normal\n        vPosition = position;             // Vertex position\n        const float extrudeHeight = 2.5;  // Fixed height modifier for extrusions\n        const vec3 rippleStartNormal = vec3(0.0, 1.0, 0.0);  // Vector pointing at the starting point of extrusion ripples \n        const float fireSpeed = 0.00001;  // Speed of spike movement\n        float polarCoordPosition;         // Position of a vertex in polar coordinate system with origin at rippleStartNormal angle;\n        vec3 refNormal;                   // Radius vector starting at object origin and pointing towards the current vertex. We will use\n                                          // it to detect vertices whose normals point outwards\n        float extrusionFactor;            // Dynamic extrusion height modifier\n        vec3 finalPosition;               // End result\n        \n        refNormal = normalize(position - earthOrigin);\n        // polarCoordPosition = acos(dot(rippleStartNormal, refNormal)) / PI;  // Origin at pole\n        polarCoordPosition = abs((acos(dot(rippleStartNormal, refNormal)) / PI) - 0.5) * 2.0;  // Origin at equator\n        extrusionFactor = frequencies[int(polarCoordPosition * float(frequencyResolution))] / 19.0;\n\n        // Extrude faces whose normals point outwards\n        if (length(refNormal - normal) < 1.4) {\n            float fireComponent = sin(pRandom(vec3(time * fireSpeed, position.x, position.y)));\n            finalPosition = position + refNormal * pow(extrusionFactor, 3.3) * extrudeHeight * fireComponent/ 40000.0;  // Fire\n            // finalPosition = position + refNormal * pow(extrusionFactor, 3.0) * extrudeHeight / 16384.0; // Crystal\n        } else {\n            finalPosition = position;\n        }\n             \n        gl_Position = projectionMatrix * modelViewMatrix * vec4(finalPosition, 1.0);\n    }\n";
 
 ////////////////////
 // Pixel shaders //
-//////////////////
+///////////////////
 
 /**
  * Pixel shaders list
@@ -43271,11 +43261,18 @@ Shaders.vertex.extruded = "\n    " + Shaders.libs.PI + "\n    " + Shaders.libs.r
 Shaders.pixel = {}; // Pixel shaders
 
 /**
- * Waterlike, with depth
+ * Waterlike, with depth, legacy
  * @todo make water under camera transparent too, z-clip stuff perhaps
  * @todo add wave speculars
  */
-Shaders.pixel.oceanic = "\n\n    const int gradientColorCount = 4;  // Number of gradient colors in use\n    \n    uniform float time;\n    uniform float screenHeight;\n    uniform float amplitude;\n    uniform float streak;\n    uniform vec3 oceanOrigin;                         // Object center in world space\n    uniform vec3 gradientColors[gradientColorCount];  // Array of colors for radial gradient\n    uniform float gradientStops[gradientColorCount];  // Color positions for radial gradient \n    varying vec3 vNormal;                             // Surface normal in object space\n    varying vec3 vWorldNormal;                        // Surface normal in world space\n    \n    void main() {\n    \n        float depth;           // Apparent water depth at point\n        float gradientPoint;   // Position of the current point within the gradient, 0..1\n        vec3 gradientFactors;  // How much of every gradient color is at this point \n        vec3 gradient;         // Computed gradient color for current pixel\n        float luminance;       // Additional light emission\n    \n        vec3 cameraDirection = normalize(cameraPosition - oceanOrigin);  // Points from object center to camera\n        depth = 1.0 - length(vWorldNormal - cameraDirection);            // Depth increases towards object center\n        gradientPoint = (1.0 - depth);                                   // Gradient goes from depth to shallow\n        luminance = streak / 128.0;                                      // Make it glow on streak\n        \n        // Compute gradient factors based on gradient stops and current point's position \n        for (int grad = 0; grad < gradientColorCount; grad++) {\n            gradientFactors[grad] = 1.0 - abs(gradientStops[grad] - gradientPoint);\n        }\n        \n        // Compute gradient by multiplying R, G & B components of gradient colors\n        // by their gradient factors and adding it all up\n        for (int col = 0; col < 3; col++) {\n            for (int grad = 0; grad < gradientColorCount; grad++) {\n                gradient[col] += gradientColors[grad][col] * gradientFactors[grad];\n            }\n        }\n   \n        // Add luminance and depth, and output\n        gl_FragColor = vec4(gradient + luminance, pow(depth, 0.8) * 4.0);\n    }\n";
+Shaders.pixel.oceanicLegacy = "\n    const int gradientColorCount = 3;                 // Number of gradient colors in use\n\n    uniform float time;\n    uniform float screenHeight;\n    uniform float amplitude;\n    uniform float streak;\n    uniform vec3 oceanOrigin;                         // Object center in world space\n    uniform vec3 gradientColors[gradientColorCount];  // Array of colors for radial gradient\n    uniform float gradientStops[gradientColorCount];  // Color positions for radial gradient \n    varying vec3 vNormal;                             // Surface normal in object space\n    varying vec3 vWorldNormal;                        // Surface normal in world space\n    \n    void main() {\n    \n        float depth;           // Apparent water depth at point\n        float gradientPoint;   // Position of the current point within the gradient, 0..1\n        vec3 gradientFactors;  // How much of every gradient color is at this point \n        vec3 gradient;         // Computed gradient color for current pixel\n        float luminance;       // Additional light emission\n    \n        vec3 cameraDirection = normalize(cameraPosition - oceanOrigin);  // Points from object center to camera\n        depth = 1.0 - length(vWorldNormal - cameraDirection);            // Depth increases towards object center\n        gradientPoint = (1.0 - depth);                                   // Gradient goes from depth to shallow\n        luminance = streak / 128.0;                                      // Make it glow on streak\n        \n        // Compute gradient factors based on gradient stops and current point's position \n        for (int grad = 0; grad < gradientColorCount; grad++) {\n            gradientFactors[grad] = 1.0 - abs(gradientStops[grad] - gradientPoint);\n        }\n        \n        // Compute gradient by multiplying R, G & B components of gradient colors\n        // by their gradient factors and adding it all up\n        for (int col = 0; col < 3; col++) {\n            for (int grad = 0; grad < gradientColorCount; grad++) {\n                gradient[col] += gradientColors[grad][col] * gradientFactors[grad];\n            }\n        }\n   \n        // Add luminance and depth, and output\n        gl_FragColor = vec4(gradient + luminance, pow(depth, 0.8) * 3.0);\n    }\n";
+
+/**
+ * Waterlike, with depth, hue changes and luminance per amplitude
+ * @todo make water under camera transparent too, z-clip stuff perhaps
+ * @todo add wave speculars
+ */
+Shaders.pixel.oceanic = "\n    const int gradientColorCount = 3;                 // Number of gradient colors in use\n\n    uniform float time;\n    uniform float screenHeight;\n    uniform float frequency;\n    uniform float amplitude;\n    uniform float streak;\n    uniform vec3 oceanOrigin;                         // Object center in world space\n    uniform vec3 gradientColors[gradientColorCount];  // Array of colors for radial gradient\n    uniform float gradientStops[gradientColorCount];  // Color positions for radial gradient \n    varying vec3 vNormal;                             // Surface normal in object space\n    varying vec3 vWorldNormal;                        // Surface normal in world space\n    \n    void main() {\n    \n        float depth;           // Apparent water depth at point\n        float gradientPoint;   // Position of the current point within the gradient, 0..1\n        vec3 gradientFactors;  // How much of every gradient color is at this point \n        vec3 gradient;         // Computed gradient color for current pixel\n        float luminance;       // Additional light emission\n    \n        vec3 cameraDirection = normalize(cameraPosition - oceanOrigin);  // Points from object center to camera\n        depth = 1.0 - length(vWorldNormal - cameraDirection);            // Depth increases towards object center\n        gradientPoint = (1.0 - depth);                                   // Gradient goes from depth to shallow\n        luminance = frequency;                         // Make it glow a bit per amplitude\n        \n        // Compute gradient factors based on gradient stops and current point's position \n        for (int grad = 0; grad < gradientColorCount; grad++) {\n            gradientFactors[grad] = 1.0 - abs(gradientStops[grad] - gradientPoint);\n        }\n        \n        // Compute gradient by multiplying R, G & B components of gradient colors\n        // by their gradient factors and adding it all up\n        for (int col = 0; col < 3; col++) {\n            for (int grad = 0; grad < gradientColorCount; grad++) {\n                gradient[col] += gradientColors[grad][col] * gradientFactors[grad];\n            }\n        }\n   \n        vec3 staticColor = gradient - luminance;\n        // vec3 variedColor = vec3(staticColor.r + sin(time), staticColor.g + sin(time), staticColor.b + sin(time));\n   \n        // Add luminance and depth, and output\n        gl_FragColor = vec4(gradient - luminance, pow(depth, 0.8) * 3.0);\n    }\n";
 
 /**
  * Party tiem
@@ -43296,80 +43293,6 @@ exports.default = Shaders;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Contains shims & polyfills.
- */
-
-var Shims = function () {
-    function Shims() {
-        _classCallCheck(this, Shims);
-    }
-
-    _createClass(Shims, null, [{
-        key: 'preventConsoleErrors',
-
-
-        /**
-         * Prevents console errors in browsers that lack a console.
-         */
-        value: function preventConsoleErrors() {
-
-            var method;
-            var noop = function noop() {};
-            var methods = ['assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error', 'exception', 'group', 'groupCollapsed', 'groupEnd', 'info', 'log', 'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd', 'timeline', 'timelineEnd', 'timeStamp', 'trace', 'warn'];
-            var length = methods.length;
-            var console = window.console = window.console || {};
-
-            while (length--) {
-                method = methods[length];
-
-                // Only stub undefined methods.
-                if (!console[method]) {
-                    console[method] = noop;
-                }
-            }
-        }
-
-        /**
-         * forEach polyfill.
-         */
-
-    }, {
-        key: 'forEachPolyfill',
-        value: function forEachPolyfill() {
-
-            var forEach = function forEach(fn, scope) {
-                'use strict';
-
-                var i, len;
-                for (i = 0, len = this.length; i < len; ++i) {
-                    if (i in this) {
-                        fn.call(scope, this[i], i, this);
-                    }
-                }
-            };
-            if (!Array.prototype.forEach) Array.prototype.forEach = forEach;
-        }
-    }]);
-
-    return Shims;
-}();
-
-exports.default = Shims;
-
-},{}],7:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _viewport = require('./viewport');
 
@@ -43393,149 +43316,369 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 // @todo make vars local?
 var THREE = require('three');
-var OrbitControls = require('three-orbit-controls')(THREE);
-var STLLoader = require('three-stl-loader')(THREE);
 
 /**
  * Represents the overall visualizer setup.
- * @todo hide mouse cursor
- * @todo favicon
- * @todo reduce earth.dae size
- * @todo yslow
- * @todo white land version as well, perhaps as reaction to amplitude buildup
- *
+ * @todo performance profile
  * @requires  viewport
  * @requires  shaders
  * @requires  sound
  * @requires  util
  */
 
-var Sonografi = function () {
+var Sonografi =
+
+/**
+ * Creates a new audio visualizer instance.
+ *
+ * @param  {HTMLElement}  canvas  Canvas DOM element to render to
+ */
+function Sonografi(canvas) {
+    _classCallCheck(this, Sonografi);
+
+    // Init viewport and sound
+    var this1 = this;
+    this.viewport = new _viewport2.default(canvas, 0x000001, 1); // Background color, opacity; if bugs in FF, try changing color a tiny bit
+    this.sound = new _sound2.default();
+
+    ///////////////
+    // Materials //
+    ///////////////
+
+    // Generate textures
+    var starFieldTexture = _util2.default.generateTexture(function (context, textureSize) {
+
+        // Make colored stars on black background
+        // @todo nebulas
+        // @todo better texture scaling
+        var screenSide = Math.min(document.body.clientWidth, document.body.clientHeight);
+        context.fillStyle = 'black';
+        context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+        _util2.default.drawStarField(context, 1800, screenSide / 2048, screenSide / 512, 0, 360, 30, 60);
+    });
+
+    // Setup common and shader-specific uniforms
+    // @todo update camera position on camera movement
+    // @todo ! make the ocean change color to music, because static gradients look like crap
+    var commonUniforms = {
+        screenHeight: { type: 'f', value: document.body.clientHeight }, // @todo live update this
+        cameraPosition: { type: 'v3', value: this.viewport.camera.position }, // @todo check if this is updated live
+
+        // Pass-by-reference live input
+        time: this.viewport.timeUniform,
+        amplitude: this.sound.amplitudeUniform,
+        amplitudes: this.sound.amplitudesUniform,
+        frequency: this.sound.frequencyUniform,
+        frequencies: this.sound.frequenciesUniform,
+        streak: this.sound.streakUniform
+    };
+    var oceanUniforms = Object.assign({}, commonUniforms, {
+        gradientColors: { type: 'v3v', value: [// See gradientColorCount in Shaders.pixel.oceanic
+            new THREE.Color(0x010014), new THREE.Color(0x010014), new THREE.Color(0x4500c3)] },
+        gradientStops: { type: 'fv', value: [0.0, 0.3, 1.0] } // @todo fix gradient stops
+    });
+    var skyUniforms = Object.assign({}, commonUniforms, {
+        starFieldTexture: { type: 't', value: starFieldTexture }
+    });
+
+    ///////////
+    // Scene //
+    ///////////
+
+    // Setup scene
+    // @todo try fresnel
+    // @todo exploded colorful crap in orbit or clouds maybe or just atmosphere
+    // @todo what's with the giant Pacific ocean, maybe rotate in another axis as well to bypass it
+    var EarthRotationAxis = new THREE.Vector3(0, 1, 0);
+    var rotationAngle = 0.0003;
+    this.sky = _util2.default.makeSphere(80000, 1, _shaders2.default.vertex.plain, _shaders2.default.pixel.scrollingStars, skyUniforms, THREE.BackSide);
+    this.ocean = _util2.default.makeSphere(1.3, 5, _shaders2.default.vertex.wavy, _shaders2.default.pixel.oceanicLegacy, oceanUniforms, THREE.FrontSide, true);
+    this.ocean.renderOrder = 2;
+    this.viewport.scene.add(this.sky, this.ocean);
+    _util2.default.loadModel('./models/earth.stl', 1.3, _shaders2.default.vertex.extruded, _shaders2.default.pixel.disco, commonUniforms, THREE.DoubleSide, true).then(function (model) {
+
+        // Add the Earth
+        this1.earth = model;
+        this1.earth.renderOrder = 1;
+        this1.viewport.scene.add(this1.earth);
+        this1.earth.rotation.x = 0.15;
+        this1.earth.rotation.y = -0.36;
+
+        // Spin the Earth
+        this1.viewport.addAnimationFunction(function () {
+            this1.ocean.rotateOnAxis(EarthRotationAxis, rotationAngle);
+            this1.earth.rotateOnAxis(EarthRotationAxis, rotationAngle);
+        }, 'spinEarth');
+    });
+
+    ////////////////////
+    // User Interface //
+    ////////////////////
+
+    // Allow dragging file into the window without playing/downloading it
+    document.addEventListener('dragover', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.dataTransfer.dropEffect = 'copy';
+    }, false);
+
+    // Setup drag & drop. Bind() sound.decode to prevent 'this undefined' error
+    document.addEventListener('drop', function (event) {
+
+        // Stop all the things
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Attempt to load the file and start decoding
+        _util2.default.loadFile(event.dataTransfer.files[0], this1.sound.decode.bind(this1.sound), // On success
+        function (err) {
+            console.error(err);
+        } // On fail
+        );
+    }, false);
+};
+
+exports.default = Sonografi;
+
+},{"./shaders":5,"./sound":7,"./util":8,"./viewport":9,"three":3}],7:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Represents the audio processing setup
+ * 
+ * @todo clean up && organize
+ */
+
+var Sound = function () {
 
     /**
-     * Creates a new audio visualizer instance.
-     *
-     * @param  {HTMLElement}  canvas  Canvas DOM element to render to
+     * Sets up audio processing.
+     * @todo ScriptProcessorNode is deprecated, replace it and ensure other functions are okay
+     * @todo y u no work on FF/Android
      */
 
-    function Sonografi(canvas) {
-        _classCallCheck(this, Sonografi);
+    function Sound() {
+        _classCallCheck(this, Sound);
 
-        // Init viewport and sound
-        var closureThis = this;
-        this.viewport = new _viewport2.default(canvas, 0x000001, 1); // Background color, opacity; if bugs in FF, try changing color a tiny bit
-        this.sound = new _sound2.default();
+        var this1 = this;
+        this.amplitudeUniform = { type: 'f', value: 0 }; // Sound amplitude digest value in Three.js shader uniform format
+        this.amplitudesUniform = { type: 'fv', value: new Float32Array(32) }; // Sound amplitudes array in Three.js shader uniform format
+        this.frequencyUniform = { type: 'f', value: 0 }; // Sound frequency digest in Three.js shader uniform format
+        this.frequenciesUniform = { type: 'fv', value: new Float32Array(32) }; // Sound frequencies array in Three.js shader uniform format
+        this.streakUniform = { type: 'f', value: 0 }; // Softly rising and falling streak indicator
 
-        // Generate textures
-        // @todo scale texture to make it uniform at all sizes
-        var starFieldTexture = Sonografi.generateTexture(function (context, textureSize) {
+        // Setup analysis
+        var fftSize = 256;
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        this.analyser = this.startAnalysis(this.audioContext, fftSize);
+        // this.sourceBuffer = this.audioContext.createBufferSource();
 
-            // Make colored stars on black background
-            // @todo nebulas
-            var screenSide = Math.min(document.body.clientWidth, document.body.clientHeight);
-            context.fillStyle = 'black';
-            context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-            Sonografi.drawStarField(context, 1800, screenSide / 2048, screenSide / 512, 0, 360, 30, 60);
-        });
+        // Wire up source -> analyser -> destination
+        this.sourceElement = document.querySelector('audio#playlist');
+        this.sourceBuffer = this.audioContext.createMediaElementSource(this.sourceElement);
+        this.sourceBuffer.connect(this.analyser);
+        this.analyser.connect(this.audioContext.destination);
 
-        // Setup shaders
-        // @todo extract a shared part
-        // @todo update camera position on camera movement
-        // @todo make the ocean change color to music, for epic win
-        this.shaderUniforms = {
-            time: this.viewport.timeUniform,
-            amplitude: this.sound.amplitudeUniform, // Pass-by-reference
-            amplitudes: this.sound.amplitudesUniform, // Pass-by-reference
-            frequency: this.sound.frequencyUniform, // Pass-by-reference
-            frequencies: this.sound.frequenciesUniform, // Pass-by-reference
-            streak: this.sound.streakUniform, // Pass-by-reference
-            starFieldTexture: { type: 't', value: starFieldTexture },
-            screenHeight: { type: 'f', value: document.body.clientHeight },
-            cameraPosition: { type: 'v3', value: this.viewport.camera.position },
-            gradientColors: { type: 'v3v', value: [new THREE.Color(0x001551), new THREE.Color(0x001551), new THREE.Color(0x001551), new THREE.Color(0x010c47)] },
-            gradientStops: { type: 'fv', value: [0.0, 0.73, 0.96, 1.0] }
-        };
+        // @todo make from mic too
+        this.sourceElement.play();
 
-        // Setup shared shader uniforms
-        // @todo use
-        // this.sharedUniforms = {
-        //     time:             this.viewport.timeUniform,
-        //     amplitude:        this.sound.amplitudeUniform,
-        //     starFieldTexture: {type: 't', value: starFieldTexture},
-        //     screenHeight:     {type: 'f', value: document.body.clientHeight}
-        // };
+        // Run streak detector
+        // @todo better detect based on time sequence analysis or at least determine a baselevel for the song at the start, for threshold
+        // @todo OOP this maybe
+        // @todo it's crap, see linear regression etc.
+        var streakStack = 0;
+        var detectionThreshold = 128; // When to add excess amplitude to streakStack
+        var streakThreshold = 860; // When to start a streak
+        var streakReserve = 3000; // Streak stability to fluctuations
+        var streakGain = 1; // How fast a streak comes when amplitude increases
+        this.streakActive = false;
+        this.streakWasActive = false;
+        this.streakHandle = setInterval(function () {
 
-        // Setup scene
-        // @todo use buffergeometry where practical
-        // @todo try fresnel
-        // @todo exploded colorful crap in orbit or clouds maybe or just atmosphere
-        // @todo what's with the giant ocean, maybe rotate in another axis as well to bypass it
-        var EarthRotationAxis = new THREE.Vector3(0, 1, 0);
-        var rotationAngle = 0.0003;
-        this.sky = this.makeSphere(80000, 1, _shaders2.default.vertex.plain, _shaders2.default.pixel.scrollingStars, THREE.BackSide);
-        this.ocean = this.makeSphere(1.3, 5, _shaders2.default.vertex.wavy, _shaders2.default.pixel.oceanic, THREE.FrontSide, true);
-        this.ocean.renderOrder = 2;
-        this.viewport.scene.add(this.sky, this.ocean);
-        this.loadModel('./models/earth.stl', 1.3, _shaders2.default.vertex.extruded, _shaders2.default.pixel.disco, THREE.DoubleSide, true).then(function (model) {
+            // Add up to detection
+            if (this1.amplitudeUniform.value > detectionThreshold) {
+                streakStack = streakStack < streakReserve ? streakStack + (this1.amplitudeUniform.value - detectionThreshold) * streakGain : streakStack;
+            } else {
+                streakStack = streakStack > 0 ? streakStack - (detectionThreshold - this1.amplitudeUniform.value) : streakStack;
+            }
 
-            // Add the Earth
-            closureThis.earth = model;
-            closureThis.earth.renderOrder = 1;
-            closureThis.viewport.scene.add(closureThis.earth);
-            closureThis.earth.rotation.x = 0.15;
-            closureThis.earth.rotation.y = -0.36;
-
-            // Spin the Earth
-            closureThis.viewport.addAnimationFunction(function () {
-                closureThis.ocean.rotateOnAxis(EarthRotationAxis, rotationAngle);
-                closureThis.earth.rotateOnAxis(EarthRotationAxis, rotationAngle);
-            }, 'spinEarth');
-        });
-        this.controls = new OrbitControls(this.viewport.camera);
-
-        // Setup drag & drop. Bind() sound.decode to prevent 'this undefined' error
-        document.addEventListener('dragover', _util2.default.allowDragging, false);
-        document.addEventListener('drop', function (dropEvent) {
-
-            // Stop all the things
-            dropEvent.preventDefault();
-            dropEvent.stopPropagation();
-
-            // Attempt to load the file and start decoding
-            _util2.default.loadFile(dropEvent.dataTransfer.files[0], closureThis.sound.decode.bind(closureThis.sound), // On file load success
-            function (err) {
-                console.error(err);
-            } // On file load fail
-            );
-        }, false);
+            // Detect and start a streak or stop a running streak
+            this1.streakWasActive = this1.streakActive;
+            if (streakStack > streakThreshold) {
+                this1.streakActive = true; // Start the streak
+                streakStack = !this1.streakWasActive ? streakReserve : streakStack; // And make sure it doesn't immediately fade
+            } else {
+                    this1.streakActive = false; // Stop the streak
+                }
+        }, 133);
     }
 
     /**
-     * Loads an external STL model into the scene.
-     * @todo make default shader values
-     * @todo add loading progress
-     * @param    {String}   path               Path to model file
-     * @param    {Number}   scale=1            Relative model scale
-     * @param    {String}   vertexShader       Code for the vertex shader
-     * @param    {String}   pixelShader        Code for the pixel shader
-     * @param    {Number}   side=0             Face sides to render, integer 0..2, see Three.js docs on BackSide etc.
-     * @param    {Boolean}  transparent=false  Whether the object uses transparency
-     * @returns  {Promise}                     Promise for model loaded event
+     * Analyzes audio stream on the given AudioContext.
+     * @todo writeme
+     * @param  {Number}  fftSize  Fast Fourier Transform size = analysis resolution; must be power of 2 and twice the number of samples
+     *
+     * @returns  {AnalyserNode}  AnalyserNode object analysis is done on
      */
 
 
-    _createClass(Sonografi, [{
+    _createClass(Sound, [{
+        key: 'startAnalysis',
+        value: function startAnalysis(audioContext, fftSize) {
+
+            // Setup analyser node
+            var analyser = audioContext.createAnalyser();
+            analyser.fftSize = fftSize;
+
+            // Start analysis loop and return
+            var this1 = this;
+            var useBins = 32;
+            var audioFrameTimeBuffer = new Uint8Array(analyser.fftSize / 2);
+            var audioFrameFreqBuffer = new Uint8Array(analyser.frequencyBinCount);
+            var sum = function sum(a, b) {
+                return a + b;
+            };
+            var analysisLoop = function analysisLoop() {
+                requestAnimationFrame(analysisLoop);
+
+                // Put data where data belongs
+                analyser.getByteTimeDomainData(audioFrameTimeBuffer);
+                analyser.getByteFrequencyData(audioFrameFreqBuffer);
+                this1.amplitudeUniform.value = audioFrameTimeBuffer.reduce(sum) / (analyser.fftSize / 2);
+                this1.amplitudesUniform.value.set(audioFrameTimeBuffer.slice(0, useBins));
+                this1.frequencyUniform.value = audioFrameFreqBuffer.reduce(sum) / (analyser.fftSize / 2); // Maybe slice here too
+                var cutOffFreqBins = Math.floor(analyser.fftSize / 64); // Because aliasing at high frequencies
+                this1.frequenciesUniform.value.set(audioFrameFreqBuffer.slice(cutOffFreqBins, cutOffFreqBins + useBins));
+
+                // Ramp streak up or down
+                if (this1.streakActive === true) {
+                    this1.streakUniform.value = this1.streakUniform.value < 127 ? this1.streakUniform.value + 1 : this1.streakUniform.value;
+                } else {
+                    this1.streakUniform.value = this1.streakUniform.value > 0 ? this1.streakUniform.value - 1 : this1.streakUniform.value;
+                }
+            };
+            analysisLoop();
+            return analyser;
+        }
+
+        /**
+         * Decodes audio buffer.
+         * @todo writeme && write meaningful error handling
+         * 
+         * @param  buffer
+         */
+
+    }, {
+        key: 'decode',
+        value: function decode(buffer) {
+
+            var this1 = this;
+            this.audioContext.decodeAudioData(buffer, function (decodedBuffer) {
+                this1.sourceBuffer.buffer = decodedBuffer;
+                this1.sourceBuffer.start(0);
+            }, function () {
+                throw new Error('Audio decoding failed');
+            });
+        }
+    }]);
+
+    return Sound;
+}();
+
+exports.default = Sound;
+
+},{}],8:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var THREE = require('three');
+var STLLoader = require('three-stl-loader')(THREE);
+
+/**
+ * Contains utility functions.
+ */
+
+var Util = function () {
+    function Util() {
+        _classCallCheck(this, Util);
+    }
+
+    _createClass(Util, null, [{
+        key: 'loadFile',
+
+
+        /**
+         * Attempts to load a file and calls a function, depending on outcome.
+         *
+         * @param  {Object}    file             File object to load, format as per drag&drop event dropEvent.dataTransfer.files[0]
+         * @param  {Function}  successCallback  Function to call with file contents parameter, if successful
+         * @param  {Function}  errorCallback    Function to call with error event parameter, if file loading failed
+         */
+        value: function loadFile(file, successCallback, errorCallback) {
+
+            // Get file info
+            var fileName = file.name;
+            var fileReader = new FileReader();
+
+            // Handle file loaded and file load error events
+            fileReader.addEventListener('load', function (loadEvent) {
+                var fileContents = loadEvent.target.result;
+                successCallback(fileContents);
+            });
+            fileReader.addEventListener('error', function (errorEvent) {
+                errorCallback(errorEvent);
+            });
+
+            // Start the actual loading
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        /**
+         * Loads an external STL model into the scene.
+         * @todo make default shader values
+         * @todo add loading progress
+         * @param    {String}   path               Path to model file
+         * @param    {Number}   scale=1            Relative model scale
+         * @param    {String}   vertexShader       Code for the vertex shader
+         * @param    {String}   pixelShader        Code for the pixel shader
+         * @param    {Object}   uniforms           Additional Three.js uniforms to use
+         * @param    {Number}   side=0             Face sides to render, integer 0..2, see Three.js docs on BackSide etc.
+         * @param    {Boolean}  transparent=false  Whether the object uses transparency
+         * @returns  {Promise}                     Promise for model loaded event
+         */
+
+    }, {
         key: 'loadModel',
         value: function loadModel(path) {
             var scale = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
             var vertexShader = arguments[2];
             var pixelShader = arguments[3];
-            var side = arguments.length <= 4 || arguments[4] === undefined ? 0 : arguments[4];
-            var transparent = arguments.length <= 5 || arguments[5] === undefined ? false : arguments[5];
+            var uniforms = arguments[4];
+            var side = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
+            var transparent = arguments.length <= 6 || arguments[6] === undefined ? false : arguments[6];
 
+
+            // Merge with default uniforms
+            uniforms = Object.assign({}, {
+                origin: { type: 'v3', value: new THREE.Vector3(0, 0, 0) } // @todo implement actual live origin coords
+            }, uniforms);
 
             // Setup and execute STL format loader with a promise
-            var closureThis = this;
             var stlLoader = new STLLoader();
             return new Promise(function (resolve, reject) {
                 stlLoader.load(path,
@@ -43543,7 +43686,7 @@ var Sonografi = function () {
                 // On data loaded, create a mesh with given geometry and shaders, and return
                 function (geometry) {
                     var material = new THREE.ShaderMaterial({
-                        uniforms: closureThis.shaderUniforms,
+                        uniforms: uniforms,
                         vertexShader: vertexShader,
                         fragmentShader: pixelShader,
                         side: side,
@@ -43577,58 +43720,6 @@ var Sonografi = function () {
          */
 
     }, {
-        key: 'makeSphere',
-
-
-        /**
-         * Prepares a sphere object with given parameters.
-         * @todo make default shader values
-         * @param    {Number}   radius=1           Sphere radius
-         * @param    {Number}   detail=1           Level of detail, integer
-         * @param    {String}   vertexShader       Code for the vertex shader
-         * @param    {String}   pixelShader        Code for the pixel shader
-         * @param    {Number}   side=0             Face sides to render, integer 0..2, see Three.js docs on BackSide etc.
-         * @param    {Boolean}  transparent=false  Whether the object uses transparency
-         * @returns  {THREE.Mesh}                  Generated Three.js object mesh
-         */
-        value: function makeSphere() {
-            var radius = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
-            var detail = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
-            var vertexShader = arguments[2];
-            var pixelShader = arguments[3];
-            var side = arguments.length <= 4 || arguments[4] === undefined ? 0 : arguments[4];
-            var transparent = arguments.length <= 5 || arguments[5] === undefined ? false : arguments[5];
-            var texture = arguments.length <= 6 || arguments[6] === undefined ? undefined : arguments[6];
-
-
-            // Create geometry, apply shaders and return result
-            var geometry = new THREE.IcosahedronGeometry(radius, detail);
-            var uniforms = {
-                texture: { type: 't', value: texture },
-                origin: { type: 'v3', value: new THREE.Vector3(0, 0, 0) } // @todo change that see next line
-            };
-            var material = new THREE.ShaderMaterial({
-                uniforms: this.shaderUniforms,
-                vertexShader: vertexShader,
-                fragmentShader: pixelShader,
-                side: side,
-                transparent: transparent
-            });
-            return new THREE.Mesh(geometry, material);
-        }
-
-        /**
-         * Draws a 4-pointed star on a canvas.
-         *
-         * @param    {CanvasRenderingContext2D}  context  Canvas context to draw in
-         * @param    {Number}                    x        X coordinate of star center
-         * @param    {Number}                    y        Y coordinate of star center
-         * @param    {Number}                    radius   Star radius
-         * @param    {String}                    color    Star color in any form accepted by Canvas 2D API
-         * @returns  {CanvasRenderingContext2D}           The drawing context initially passed in
-         */
-
-    }], [{
         key: 'generateTexture',
         value: function generateTexture(generator) {
 
@@ -43656,6 +43747,58 @@ var Sonografi = function () {
             texture.needsUpdate = true;
             return texture;
         }
+
+        /**
+         * Prepares a sphere object with given parameters.
+         * @todo make default shader values
+         * @param    {Number}   radius=1           Sphere radius
+         * @param    {Number}   detail=1           Level of detail, integer
+         * @param    {String}   vertexShader       Code for the vertex shader
+         * @param    {String}   pixelShader        Code for the pixel shader
+         * @param    {Object}   uniforms           Additional Three.js uniforms to use
+         * @param    {Number}   side=0             Face sides to render, integer 0..2, see Three.js docs on BackSide etc.
+         * @param    {Boolean}  transparent=false  Whether the object uses transparency
+         * @returns  {THREE.Mesh}                  Generated Three.js object mesh
+         */
+
+    }, {
+        key: 'makeSphere',
+        value: function makeSphere() {
+            var radius = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+            var detail = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+            var vertexShader = arguments[2];
+            var pixelShader = arguments[3];
+            var uniforms = arguments[4];
+            var side = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
+            var transparent = arguments.length <= 6 || arguments[6] === undefined ? false : arguments[6];
+
+
+            // Create geometry, apply shaders and return result
+            var geometry = new THREE.IcosahedronGeometry(radius, detail);
+            uniforms = Object.assign({}, {
+                origin: { type: 'v3', value: new THREE.Vector3(0, 0, 0) } // @todo implement actual live origin coords
+            }, uniforms);
+            var material = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                vertexShader: vertexShader,
+                fragmentShader: pixelShader,
+                side: side,
+                transparent: transparent
+            });
+            return new THREE.Mesh(geometry, material);
+        }
+
+        /**
+         * Draws a 4-pointed star on a canvas.
+         *
+         * @param    {CanvasRenderingContext2D}  context  Canvas context to draw in
+         * @param    {Number}                    x        X coordinate of star center
+         * @param    {Number}                    y        Y coordinate of star center
+         * @param    {Number}                    radius   Star radius
+         * @param    {String}                    color    Star color in any form accepted by Canvas 2D API
+         * @returns  {CanvasRenderingContext2D}           The drawing context initially passed in
+         */
+
     }, {
         key: 'drawStar',
         value: function drawStar(context, x, y, radius, color) {
@@ -43693,7 +43836,7 @@ var Sonografi = function () {
 
             // Draw shadeCount stars of decreasing radius, from transparent to opaque
             for (var shadeIndex = shadeCount; shadeIndex > 0; shadeIndex--) {
-                Sonografi.drawStar(context, // Drawing context
+                Util.drawStar(context, // Drawing context
                 x, // X position
                 y, // Y position
                 shadeIndex / shadeCount * radius, // Radius
@@ -43709,7 +43852,7 @@ var Sonografi = function () {
          * @param    {CanvasRenderingContext2D}  context              Canvas context to draw in
          * @param    {Number}                    starCount            Number of stars to draw
          * @param    {Number}                    radius               Star radius
-         * @param    {Number}                    radiusVariation      Maximum absolute deviation from radius 
+         * @param    {Number}                    radiusVariation      Maximum absolute deviation from radius
          * @param    {Number}                    hue                  Color hue, integer 0..360
          * @param    {Number}                    hueVariation         Maximum absolute deviation from hue
          * @param    {Number}                    saturation           Color saturation, integer 0..100
@@ -43725,7 +43868,7 @@ var Sonografi = function () {
             var fieldWidth = context.canvas.clientWidth;
             var fieldHeight = context.canvas.clientHeight;
             for (var starIndex = 0; starIndex < starCount; starIndex++) {
-                Sonografi.drawShadedStar(context, // Drawing context
+                Util.drawShadedStar(context, // Drawing context
                 Math.random() * fieldWidth, // X position
                 Math.random() * fieldHeight, // Y position
                 radius + (Math.random() - 0.5) * radiusVariation * 2, // Radius
@@ -43739,273 +43882,12 @@ var Sonografi = function () {
         }
     }]);
 
-    return Sonografi;
-}();
-
-exports.default = Sonografi;
-
-},{"./shaders":5,"./sound":8,"./util":9,"./viewport":10,"three":3,"three-orbit-controls":1,"three-stl-loader":2}],8:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Represents the audio processing setup
- * 
- * @todo clean up && organize
- */
-
-var Sound = function () {
-
-    /**
-     * Sets up audio processing.
-     * @todo ScriptProcessorNode is deprecated, replace it and ensure other functions are okay
-     * @todo y u no work on FF/Android
-     */
-
-    function Sound() {
-        _classCallCheck(this, Sound);
-
-        var closureThis = this;
-        this.amplitudeUniform = { type: 'f', value: 0 }; // Sound amplitude digest value in Three.js shader uniform format
-        this.amplitudesUniform = { type: 'fv', value: [] }; // Sound amplitudes array in Three.js shader uniform format
-        this.frequencyUniform = { type: 'f', value: 0 }; // Sound frequency digest in Three.js shader uniform format
-        this.frequenciesUniform = { type: 'fv', value: [] }; // Sound frequencies array in Three.js shader uniform format
-        this.streakUniform = { type: 'f', value: 0 }; // Softly rising and falling streak indicator
-
-        // Setup analysis
-        var fftSize = 256;
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.analyser = this.startAnalysis(this.audioContext, fftSize);
-        // this.sourceBuffer = this.audioContext.createBufferSource();
-
-        // Wire up source -> analyser -> destination
-        this.sourceElement = document.querySelector('audio#playlist');
-        this.sourceBuffer = this.audioContext.createMediaElementSource(this.sourceElement);
-        this.sourceBuffer.connect(this.analyser);
-        this.analyser.connect(this.audioContext.destination);
-
-        // @todo make from mic too
-        this.sourceElement.play();
-
-        // Run streak detector
-        // @todo better detect based on time sequence analysis or at least determine a baselevel for the song at the start, for threshold
-        // @todo OOP this
-        // @todo it's crap, see linear regression etc.
-        var streakStack = 0;
-        var detectionThreshold = 128; // When to add excess amplitude to streakStack
-        var streakThreshold = 860; // When to start a streak
-        var streakReserve = 3000; // Streak stability to fluctuations
-        var streakGain = 1; // How fast a streak comes when amplitude increases
-        this.streakActive = false;
-        this.streakWasActive = false;
-        this.streakHandle = setInterval(function () {
-
-            // Add up to detection
-            if (closureThis.amplitudeUniform.value > detectionThreshold) {
-                streakStack = streakStack < streakReserve ? streakStack + (closureThis.amplitudeUniform.value - detectionThreshold) * streakGain : streakStack;
-            } else {
-                streakStack = streakStack > 0 ? streakStack - (detectionThreshold - closureThis.amplitudeUniform.value) : streakStack;
-            }
-
-            // Detect and start a streak or stop a running streak
-            closureThis.streakWasActive = closureThis.streakActive;
-            if (streakStack > streakThreshold) {
-                closureThis.streakActive = true; // Start the streak
-                streakStack = !closureThis.streakWasActive ? streakReserve : streakStack; // And make sure it doesn't immediately fade
-            } else {
-                    closureThis.streakActive = false; // Stop the streak
-                }
-        }, 133);
-    }
-
-    /**
-     * Analyzes audio stream on the given AudioContext.
-     * @todo writeme
-     * @param  {Number}  fftSize  Fast Fourier Transform size = analysis resolution; must be power of 2 and twice the number of samples
-     *
-     * @returns  {AnalyserNode}  AnalyserNode object analysis is done on
-     */
-
-
-    _createClass(Sound, [{
-        key: 'startAnalysis',
-        value: function startAnalysis(audioContext, fftSize) {
-
-            // Setup analyser node
-            var analyser = audioContext.createAnalyser();
-            analyser.fftSize = fftSize;
-
-            // Start analysis loop and return
-            var closureThis = this;
-            var audioFrameTimeBuffer = new Uint8Array(analyser.fftSize / 2);
-            var audioFrameFreqBuffer = new Uint8Array(analyser.frequencyBinCount);
-            var sum = function sum(a, b) {
-                return a + b;
-            };
-            var analysisLoop = function analysisLoop() {
-                requestAnimationFrame(analysisLoop);
-
-                // Put data where data belongs
-                analyser.getByteTimeDomainData(audioFrameTimeBuffer);
-                analyser.getByteFrequencyData(audioFrameFreqBuffer);
-                closureThis.amplitudeUniform.value = audioFrameTimeBuffer.reduce(sum) / (analyser.fftSize / 2);
-                closureThis.amplitudesUniform.value = audioFrameTimeBuffer;
-                closureThis.frequencyUniform.value = audioFrameFreqBuffer.reduce(sum) / (analyser.fftSize / 2); // Maybe slice here too
-                closureThis.frequenciesUniform.value = audioFrameFreqBuffer.slice(Math.floor(analyser.fftSize / 64)); // Because aliasing at high frequencies
-
-                // Ramp streak up or down
-                if (closureThis.streakActive === true) {
-                    closureThis.streakUniform.value = closureThis.streakUniform.value < 127 ? closureThis.streakUniform.value + 1 : closureThis.streakUniform.value;
-                } else {
-                    closureThis.streakUniform.value = closureThis.streakUniform.value > 0 ? closureThis.streakUniform.value - 1 : closureThis.streakUniform.value;
-                }
-            };
-            analysisLoop();
-            return analyser;
-        }
-
-        /**
-         * Decodes audio buffer.
-         * @todo writeme && write meaningful error handling
-         * 
-         * @param  buffer
-         */
-
-    }, {
-        key: 'decode',
-        value: function decode(buffer) {
-
-            var closureThis = this;
-            this.audioContext.decodeAudioData(buffer, function (decodedBuffer) {
-                closureThis.sourceBuffer.buffer = decodedBuffer;
-                closureThis.sourceBuffer.start(0);
-            }, function () {
-                throw new Error('Audio decoding failed');
-            });
-        }
-    }]);
-
-    return Sound;
-}();
-
-exports.default = Sound;
-
-},{}],9:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Contains utility functions.
- */
-
-var Util = function () {
-    function Util() {
-        _classCallCheck(this, Util);
-    }
-
-    _createClass(Util, null, [{
-        key: 'getParams',
-
-
-        /**
-         * Decodes URI parameters.
-         * @todo unused, remove
-         * @returns  {Object}  An Object containing parsed URI parameters
-         */
-        value: function getParams() {
-            return decodeURIComponent(window.location.search.slice(1)).split('&').reduce(function (objectAccum, current) {
-                current = current.split('=');
-                objectAccum[current[0]] = current[1];
-                return objectAccum;
-            }, {});
-        }
-
-        /**
-         * Resizes canvas to its real client size.
-         * @todo make it recenter camera as well, perhaps call a Viewport resize method if there is a Viewport
-         * @todo REMOVE ME is unused
-         *
-         * @param    {HTMLElement}  canvas  Reference to a canvas DOM element
-         * @returns  {HTMLElement}          Reference to the same canvas element
-         */
-
-    }, {
-        key: 'refitCanvas',
-        value: function refitCanvas(canvas) {
-
-            // Refit the canvas
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
-
-            return canvas;
-        }
-
-        /**
-         * Prevents browser from playing/downloading the dragged file and allows JS handling.
-         * 
-         * @param  {Event}  dragoverEvent  Dragover event object
-         */
-
-    }, {
-        key: 'allowDragging',
-        value: function allowDragging(dragoverEvent) {
-
-            // Stop playing/downloading and bubbling, allow JS handling
-            dragoverEvent.preventDefault();
-            dragoverEvent.stopPropagation();
-            dragoverEvent.dataTransfer.dropEffect = 'copy';
-        }
-
-        /**
-         * Attempts to load a file and calls a function, depending on outcome.
-         *
-         * @param  {Object}    file             File object to load, format as per drag&drop event dropEvent.dataTransfer.files[0]
-         * @param  {Function}  successCallback  Function to call with file contents parameter, if successful
-         * @param  {Function}  errorCallback    Function to call with error event parameter, if file loading failed
-         */
-
-    }, {
-        key: 'loadFile',
-        value: function loadFile(file, successCallback, errorCallback) {
-
-            // Get file info
-            var fileName = file.name;
-            var fileReader = new FileReader();
-
-            // Handle file loaded and file load error events
-            fileReader.addEventListener('load', function (loadEvent) {
-                var fileContents = loadEvent.target.result;
-                successCallback(fileContents);
-            });
-            fileReader.addEventListener('error', function (errorEvent) {
-                errorCallback(errorEvent);
-            });
-
-            // Start the actual loading
-            fileReader.readAsArrayBuffer(file);
-        }
-    }]);
-
     return Util;
 }();
 
 exports.default = Util;
 
-},{}],10:[function(require,module,exports){
+},{"three":3,"three-stl-loader":2}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -44017,12 +43899,14 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var THREE = require('three');
+var OrbitControls = require('three-orbit-controls')(THREE);
 
 /**
  * Represents a combination of canvas and Three.js scene, camera and renderer objects.
- * @todo cache properties, optimize, remove prerender function facility perhaps
  * @todo resizing at small widths
  * @todo restrict zooming
+ * @todo hide mouse cursor
+ * @todo make adjustments on resize see http://raathigesh.com/Audio-Visualization-with-Web-Audio-and-ThreeJS/
  * 
  * @requires  THREE
  */
@@ -44032,8 +43916,6 @@ var Viewport = function () {
     /**
      * Creates a viewport object in a given canvas.
      * Functions defined in the constructor have local/private variable access.
-     * @todo make adjustments on resize see http://raathigesh.com/Audio-Visualization-with-Web-Audio-and-ThreeJS/
-     * @todo controls zoom limits
      *
      * @param  {HTMLElement}    canvas     Canvas DOM element to attach to
      * @param  {Number|String}  color      Background color in a format accepted by Three.js renderer
@@ -44046,7 +43928,7 @@ var Viewport = function () {
         _classCallCheck(this, Viewport);
 
         /**
-         * Render function bound to requestAnimationFrame.
+         * Rendering function bound looping through requestAnimationFrame.
          * @type  {Function}
          * @private
          */
@@ -44054,7 +43936,6 @@ var Viewport = function () {
 
         /**
          * A list of functions to execute before each render.
-         * @todo replace function calls with inlining if needed
          * @type  {Object}
          * @private
          */
@@ -44069,6 +43950,7 @@ var Viewport = function () {
         this.renderer.setClearColor(color, opacity);
         this.renderer.setSize(canvas.clientWidth, canvas.clientHeight, true); // True = autoresize on
         this.camera.position.z = 3.8;
+        this.controls = new OrbitControls(this.camera);
 
         // Start viewport animation loop
         this.startAnimationLoop();
@@ -44089,19 +43971,19 @@ var Viewport = function () {
             var camera = this.camera;
 
             // Rendering function
-            // @todo I am performance critical, optimize me
-            var closureThis = this;
+            // @todo I am performance critical, optimize me if needed
+            var this1 = this;
             this._render = function () {
 
                 // Queue for next frame
-                requestAnimationFrame(closureThis._render);
+                requestAnimationFrame(this1._render);
 
                 // Execute queued functions, iterating over an Object of Arrays (of functions),
                 // with some variable caching
-                var keys = Object.keys(closureThis._animationList);
+                var keys = Object.keys(this1._animationList);
                 for (var n = 0, l = keys.length; n < l; n++) {
-                    for (var N = 0, L = closureThis._animationList[keys[n]].length; N < L; N++) {
-                        closureThis._animationList[keys[n]][N]();
+                    for (var N = 0, L = this1._animationList[keys[n]].length; N < L; N++) {
+                        this1._animationList[keys[n]][N]();
                     }
                 }
 
@@ -44109,7 +43991,7 @@ var Viewport = function () {
                 renderer.render(scene, camera);
 
                 // Advance time
-                closureThis.timeUniform.value += 0.01;
+                this1.timeUniform.value += 0.01;
             };
 
             // Start rendering
@@ -44201,4 +44083,4 @@ var Viewport = function () {
 
 exports.default = Viewport;
 
-},{"three":3}]},{},[4]);
+},{"three":3,"three-orbit-controls":1}]},{},[4]);
