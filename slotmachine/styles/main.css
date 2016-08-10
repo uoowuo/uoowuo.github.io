@@ -1,0 +1,75 @@
+/* Reset */
+* {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+/* General */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font: 16px Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    min-height: 320px;
+    height: 100vh;
+    background: black;
+}
+
+/* Inputs */
+.start-button {
+    margin: 1em 0 -1em 0;
+    padding: 0.5em 1em;
+    min-height: 2.29em;
+    border: 0.1875rem solid white;
+    background: black;
+    font: bold 3rem Arial, Helvetica Neue, Helvetica, sans-serif;
+    color: white;
+    -webkit-transition: all 0.2s;
+    transition: all 0.2s;
+    -webkit-transform: perspective(400px) rotate3d(1, 0, 0, 30deg);
+    transform: perspective(400px) rotate3d(1, 0, 0, 30deg);
+    cursor: pointer;
+}
+.start-button[disabled="disabled"] {
+    opacity: 0.65;
+    cursor: auto;
+}
+.start-button:not([disabled="disabled"]):hover,
+.start-button:not([disabled="disabled"]):active {
+    box-shadow: 0 -0.1em 1em 0 hsla(0, 100%, 100%, 0.2);
+    text-shadow: 0 0 0.25em hsla(0, 100%, 100%, 0.45);
+}
+.start-button:not([disabled="disabled"]):active {
+    -webkit-transform: perspective(400px) translate3d(0, 1rem, -6rem) rotate3d(1, 0, 0, 30deg);
+    transform: perspective(400px) translate3d(0, 1rem, -6rem) rotate3d(1, 0, 0, 30deg);
+}
+.start-button:focus {
+    outline: none;
+
+}
+.start-button::-moz-focus-inner {
+    border: none;
+}
+
+/* Canvas */
+#game-scene {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    max-width: 648px;
+    max-height: 432px;
+}
+canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* Animations */
