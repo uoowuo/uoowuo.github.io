@@ -103019,7 +103019,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         });
     });
 })(self); /**
-           * Slotmachine, v1.1.2
+           * Slotmachine, v1.2.0
            *
            * Description: A simple slot machine.
            */
@@ -103195,14 +103195,46 @@ var Slotmachine = function () {
         this.symbolWidth = 216;
         this.symbolHeight = 144;
         this.symbolsShown = 3;
-        this.reelTemplate = ['e', 'e', 'e', 'g', 'g', 'g', 'h', 'h', 'h', 'n', 'n', 'n', 'o', 'o', 'o', 's', 's', 's', 'u', 'u', 'u'];
+        this.reelTemplate = ['e', 'e', 'e', 'e', 'r', 'r', 'r', 'r', 'h', 'n', 'n', 'o', 'o', 'o', 's', 's', 'u', 'u'];
         this.reelCount = reelCount;
         this.reelWidth = this.symbolWidth;
         this.reelHeight = this.symbolHeight * this.symbolsShown;
+        this.winningMatches = [
+
+        // Words and acronyms
+        'eon', 'err', 'nee', 'nor', 'nun', 'one', 'ore', 'our', 'roe', 'rue', 'run', 'see', 'son', 'sos', 'sue', 'sun', 'urn', 'use', 'usr', 'ron', 'seo', 'uno', 'eur', 'ros', 'rus', 'sor', 'nes', 'noo', 'nou', 'soo', 'neo', 'rss', 'ssn', 'eos', 'oss', 'snu', 'ero', 'eru', 'suo', 'sur', 'nos', 'orr', 'res', 'roo', 'esr', 'srs', 'usn', 'unn', 'rur', 'sen', 'rse', 'ren', 'sno', 'sse', 'neu', 'sou',
+
+        // Words with [heart] working as 'o' or other letter
+        'hne', 'shn', 'shs', 'rhn', 'seh', 'shr', 'rhs', 'ush', 'neh', 'hss', 'enh', 'hur', 'nsh', 'ssh',
+
+        // Words with heart as a delimiter
+        'nho', 'sho',
+
+        // Pictographic and semi-pictographic sequences
+        // Faces
+        'oeo', 'oro', 'ono', 'oso', 'eoe', 'ror', 'uou', 'ehe', 'rhr', 'nhn', 'shs', 'hrh', 'oou', 'uoo', 'ere', 'ene', 'ooh', 'hoo',
+        // [Heart] as word/notion of love and similar
+        'hhu', 'uhh', 'hon', 'roh', 'noh', 'urh', 'hen', 'hes', 'hne', 'hno', 'hos', 'hso', 'hus', 'heu', 'orh', 'soh', 'hor'];
+        this.superWinningMatches = [
+
+        // Three in a row
+        'eee', 'rrr', 'hhh', 'nnn', 'ooo', 'sss', 'uuu',
+
+        // Words and acronyms
+        'non', 'reo',
+
+        // Words with [heart] working as an 'o'
+        'nhn', 'erh',
+
+        // Pictographic and semi-pictographic sequences
+        // Faces
+        'ouo', 'oho', 'heh', 'hoh', 'hnh', 'hsh', 'huh',
+        // [Heart] as word/notion of love and similar
+        'hse', 'hun', 'rhe'];
 
         // Setup asset loader
         var preload = function preload() {
-            this1.assets = this1.loadAssets(['./images/symbolE.png', './images/symbolG.png', './images/symbolH.png', './images/symbolN.png', './images/symbolO.png', './images/symbolS.png', './images/symbolU.png'], 'spritesheet', 216, 144);
+            this1.assets = this1.loadAssets(['./images/symbolE.png', './images/symbolR.png', './images/symbolH.png', './images/symbolN.png', './images/symbolO.png', './images/symbolS.png', './images/symbolU.png'], 'spritesheet', 216, 144);
         };
 
         // Start the game
@@ -103242,7 +103274,7 @@ var Slotmachine = function () {
 
                 // Setup speeds, number of steps and the all-reels-stopped condition
                 var speedRandom = Math.random() * 100;
-                var stepsCount = Math.floor(Math.random() * 58);
+                var stepsCount = Math.floor(Math.random() * 58) + 1;
 
                 reel.onRunComplete = new Phaser.Signal();
                 reel.onRunComplete.add(function () {
@@ -103261,18 +103293,21 @@ var Slotmachine = function () {
                             currentSymbolNames.push(currentSymbol.name);
                         });
 
-                        // Determine if the player won by comparing symbols in pairs
-                        var isWinner = !!currentSymbolNames.reduce(function (prev, cur) {
-                            if (prev === cur) {
-                                return cur;
-                            } else {
-                                return false;
-                            }
-                        });
-                        if (isWinner) {
+                        // Determine if the player won, and the win category
+                        var winType = 'none';
+                        if (_this.winningMatches.indexOf(currentSymbolNames.join('')) !== -1) {
+                            winType = 'regular';
+                        } else if (_this.superWinningMatches.indexOf(currentSymbolNames.join('')) !== -1) {
+                            winType = 'super';
+                        }
+
+                        // Play the winning animations if won; loop if super win
+                        if (winType !== 'none') {
                             console.log('You may have won a million dollars!');
                             currentSymbols.forEach(function (symbol) {
-                                symbol.gameObject.animations.add('pulsate').play(6, true); // Play winning animation
+                                symbol.gameObject.animations.add('win').play(6, winType === 'super').onComplete.add(function () {
+                                    symbol.gameObject.animations.getAnimation('win').stop(true);
+                                });
                             });
                         } else {
                             console.log('meh.');
