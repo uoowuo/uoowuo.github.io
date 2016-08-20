@@ -103019,7 +103019,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         });
     });
 })(self); /**
-           * Slotmachine, v1.1.0
+           * Slotmachine, v1.1.1
            *
            * Description: A simple slot machine.
            */
@@ -103195,7 +103195,7 @@ var Slotmachine = function () {
         this.symbolWidth = 216;
         this.symbolHeight = 144;
         this.symbolsShown = 3;
-        this.reelTemplate = ['e', 'e', 'e', 'e', 'e', 'e', 'g', 'g', 'g', 'g', 'g', 's', 's', 's', 'o', 'o', 'u', 'u', 'n', 'n', 'n', 'n', 'n', 'n', 'h'];
+        this.reelTemplate = ['e', 'e', 'e', 'g', 'g', 'g', 'h', 'n', 'n', 'o', 'o', 's', 's', 's', 'u', 'u', 'u'];
         this.reelCount = reelCount;
         this.reelWidth = this.symbolWidth;
         this.reelHeight = this.symbolHeight * this.symbolsShown;
