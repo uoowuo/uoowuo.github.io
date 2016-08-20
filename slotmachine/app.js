@@ -103019,7 +103019,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         });
     });
 })(self); /**
-           * Slotmachine, v1.2.0
+           * Slotmachine, v1.2.1
            *
            * Description: A simple slot machine.
            */
@@ -103202,17 +103202,17 @@ var Slotmachine = function () {
         this.winningMatches = [
 
         // Words and acronyms
-        'eon', 'err', 'nee', 'nor', 'nun', 'one', 'ore', 'our', 'roe', 'rue', 'run', 'see', 'son', 'sos', 'sue', 'sun', 'urn', 'use', 'usr', 'ron', 'seo', 'uno', 'eur', 'ros', 'rus', 'sor', 'nes', 'noo', 'nou', 'soo', 'neo', 'rss', 'ssn', 'eos', 'oss', 'snu', 'ero', 'eru', 'suo', 'sur', 'nos', 'orr', 'res', 'roo', 'esr', 'srs', 'usn', 'unn', 'rur', 'sen', 'rse', 'ren', 'sno', 'sse', 'neu', 'sou',
+        'eon', 'err', 'nee', 'nor', 'nun', 'one', 'ore', 'our', 'roe', 'rue', 'run', 'see', 'son', 'uss', 'sos', 'sue', 'sun', 'urn', 'use', 'usr', 'ron', 'seo', 'uno', 'eur', 'ros', 'rus', 'sor', 'nes', 'noo', 'nou', 'soo', 'neo', 'rss', 'ssn', 'eos', 'oss', 'snu', 'ero', 'eru', 'suo', 'sur', 'nos', 'orr', 'res', 'roo', 'esr', 'srs', 'usn', 'unn', 'rur', 'sen', 'ren', 'sno', 'sse', 'neu', 'sou', 'oun', 'urs', 'uro', 'nuo',
 
-        // Words with [heart] working as 'o' or other letter
-        'hne', 'shn', 'shs', 'rhn', 'seh', 'shr', 'rhs', 'ush', 'neh', 'hss', 'enh', 'hur', 'nsh', 'ssh',
+        // Words with [heart] working as 'o' or other letters
+        'hne', 'shn', 'shs', 'rhn', 'seh', 'shr', 'rhs', 'ush', 'neh', 'hss', 'enh', 'hur', 'nsh', 'ssh', 'eho',
 
         // Words with heart as a delimiter
         'nho', 'sho',
 
         // Pictographic and semi-pictographic sequences
         // Faces
-        'oeo', 'oro', 'ono', 'oso', 'eoe', 'ror', 'uou', 'ehe', 'rhr', 'nhn', 'shs', 'hrh', 'oou', 'uoo', 'ere', 'ene', 'ooh', 'hoo',
+        'oeo', 'oro', 'ono', 'oso', 'eoe', 'ror', 'uou', 'ehe', 'rhr', 'nhn', 'shs', 'hrh', 'oou', 'uoo', 'ere', 'ene', 'ooh', 'hoo', 'oor', 'roo', 'eoo', 'ooe', 'ueu', 'oos', 'soo',
         // [Heart] as word/notion of love and similar
         'hhu', 'uhh', 'hon', 'roh', 'noh', 'urh', 'hen', 'hes', 'hne', 'hno', 'hos', 'hso', 'hus', 'heu', 'orh', 'soh', 'hor'];
         this.superWinningMatches = [
