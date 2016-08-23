@@ -51971,32 +51971,43 @@ var Scene = exports.Scene = function () {
 },{"../utils/dom-utilities.js":10,"../utils/js-helpers.js":11,"../utils/preloader.js":12,"./renderer.js":7,"three":6,"three/examples/js/detector":3}],9:[function(require,module,exports){
 'use strict';
 
-var scene = require('../core/scene.js');
-var __s__ = require('../utils/js-helpers.js');
-var __d__ = require('../utils/dom-utilities.js');
+(function (globals) {
+    'use strict';
 
-var node = document.getElementById("app-3d"),
-    t = new scene.Scene(node, {
-    models: [{
-        fileObj: "Ring.obj",
-        fileMtl: "Ring.mtl",
-        filesDir: "./3dobjects/",
-        scale: { x: 0.22, y: 0.22, z: 0.22 },
-        position: { x: -0.5, y: -1.3, z: 0 },
-        rotation: { x: 0, y: Math.PI / 3, z: 0 },
-        texturesMap: {
-            "Big_Ring": new THREE.MeshPhongMaterial({ color: 0xd3b371, shininess: 100 }),
-            "Small_Ring": new THREE.MeshPhongMaterial({ color: 0xeeeeee, shininess: 100 })
-        }
-    }]
-});
+    var scene = require('../core/scene.js');
+    var __s__ = require('../utils/js-helpers.js');
+    var __d__ = require('../utils/dom-utilities.js');
 
-// console.log(t);
+    // Get viewport element and create the scene in it, scaling it down on vertical screens
+    var viewElement = document.getElementById("app-3d");
+    var scaleFactor;
+    if (viewElement.clientWidth / viewElement.clientHeight < 1.2) {
+        scaleFactor = viewElement.clientWidth / viewElement.clientHeight;
+    } else {
+        scaleFactor = 1;
+    }
+    var t = new scene.Scene(viewElement, {
+        models: [{
+            fileObj: "Ring.obj",
+            fileMtl: "Ring.mtl",
+            filesDir: "./3dobjects/",
+            scale: { x: 0.22 * scaleFactor, y: 0.22 * scaleFactor, z: 0.22 * scaleFactor },
+            position: { x: -0.5 * scaleFactor, y: -1.4 * scaleFactor, z: 0 },
+            rotation: { x: 0, y: Math.PI / 3, z: 0 },
+            texturesMap: {
+                "Big_Ring": new THREE.MeshPhongMaterial({ color: 0xd3b371, shininess: 100 }),
+                "Small_Ring": new THREE.MeshPhongMaterial({ color: 0xeeeeee, shininess: 100 })
+            }
+        }]
+    });
 
-__d__.addEventLnr(node, "modelLoaded", function (ev) {
+    // console.log(t);
 
-    console.log(ev);
-});
+    __d__.addEventLnr(viewElement, "modelLoaded", function (ev) {
+
+        console.log(ev);
+    });
+})(self);
 
 },{"../core/scene.js":8,"../utils/dom-utilities.js":10,"../utils/js-helpers.js":11}],10:[function(require,module,exports){
 "use strict";
