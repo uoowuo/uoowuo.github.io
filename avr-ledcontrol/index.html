@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>avr-ledcontrol demo</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style type="text/css">
+            /* Reset */
+            * {
+                box-sizing: border-box;
+                -moz-box-sizing: border-box;
+            }
+
+            /* General */
+            html, body {
+                font: 16px Arial, "Helvetica Neue", Helvetica, sans-serif;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+            }
+            body {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: black;
+                height: 100vh;
+                min-height: 320px;
+            }
+
+            /* Video */
+            .main-video {
+                width: 100%;
+                height: auto;
+                max-width: 1080px;
+                max-height: 720px;
+            }
+        </style>
+    </head>
+    <body id="top">
+        <video class="main-video" controls autoplay>
+            <source src="./demo.mp4" type="video/mp4">
+            <a href="./demo.mp4">View the video</a>
+        </video>
+    </body>
+</html>
