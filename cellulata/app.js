@@ -103014,7 +103014,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         globals.cellulata = new _cellulata2.default(scene);
     });
 })(self); /**
-           * Cellulata, v0.2.0
+           * Cellulata, v0.2.1
            *
            * Description: A cellular automata game.
            */
@@ -103494,10 +103494,6 @@ var _cell = require('./cell');
 
 var Cell = _interopRequireWildcard(_cell);
 
-var _util = require('./util');
-
-var _util2 = _interopRequireDefault(_util);
-
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -103531,9 +103527,16 @@ var Cellulata = function () {
         this.animationsFramerate = 2; // Animations' framerate
 
         // Setup asset loader
+        // @todo Atlas
         var this1 = this;
         var preload = function preload() {
+
+            // Cell tiles
             this1.assets = this1.loadAssets(['./images/cell-rock.png', './images/cell-soil.png', './images/cell-quartz.png', './images/cell-water.png', './images/cell-nitrogen.png', './images/cell-oxygen.png', './images/cell-co2.png', './images/cell-algae.png'], 'spritesheet', _this.assetsCellSize, _this.assetsCellSize);
+
+            // Background
+            _this.game.load.spritesheet('background', './images/background.jpg');
+            _this.assets.push('background');
         };
 
         // Start the game
@@ -103590,7 +103593,10 @@ var Cellulata = function () {
             // Create and populate the world
             this.world = new _world2.default(this.worldSize);
 
-            // Generate content
+            // Set background
+            this.game.add.sprite(0, 0, 'background');
+
+            // Generate cells grid
             var maxIndexX = this.world.width - 1;
             var maxIndexY = this.world.height - 1;
             this.world.grid.rectangle([0, maxIndexY - 0.8 * maxIndexY], [maxIndexX, maxIndexY], _grid2.default.fill(function () {
@@ -103641,7 +103647,7 @@ var Cellulata = function () {
 
 exports.default = Cellulata;
 
-},{"./cell":6,"./grid":10,"./util":13,"./world":14,"phaser/build/custom/p2":1,"phaser/build/custom/phaser-split":2,"phaser/build/custom/pixi":3}],8:[function(require,module,exports){
+},{"./cell":6,"./grid":10,"./world":13,"phaser/build/custom/p2":1,"phaser/build/custom/phaser-split":2,"phaser/build/custom/pixi":3}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -103813,7 +103819,7 @@ var Grid = function () {
         key: 'fill',
         value: function fill(cellConstructor) {
 
-            // Creates a new cell at given grid address
+            /** Creates a new cell at given grid address */
             return function (grid, x, y) {
 
                 // Destroy existing cell, if any
@@ -103910,160 +103916,6 @@ function Sun() {
 exports.default = Sun;
 
 },{}],13:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Contains utility functions.
- */
-var Util = function () {
-    function Util() {
-        _classCallCheck(this, Util);
-    }
-
-    _createClass(Util, null, [{
-        key: 'generateTexture',
-
-
-        /**
-         * Generates a texture on offscreen canvas with a given generator function.
-         *
-         * @param    {Function}  generator  Generator function to make the texture with. Drawing context and texture size passed
-         * @returns  {THREE.Texture}        Generated Three.js texture object
-         */
-        value: function generateTexture(generator) {
-
-            // Prepare offscreen canvas to draw on
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            canvas.style = "position:fixed; bottom: 0; opacity: 0;"; // @todo remove this
-            document.body.appendChild(canvas); // @todo remove this
-
-            // Select a power-of-two texture size nearest to the screen dimensions
-            var screenSide = Math.min(document.body.clientWidth, document.body.clientHeight);
-            for (var textureSizes = [64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384], i = 0; i < textureSizes.length; i++) {
-                if (screenSide <= textureSizes[i]) {
-                    var textureSize = textureSizes[i];
-                    break;
-                }
-            }
-            canvas.width = canvas.height = textureSize;
-
-            // Generate and return the texture
-            generator(context, textureSize);
-            var texture = new THREE.Texture(canvas);
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.needsUpdate = true;
-            return texture;
-        }
-
-        /**
-         * Draws a 4-pointed star on a canvas.
-         *
-         * @param    {CanvasRenderingContext2D}  context  Canvas context to draw in
-         * @param    {Number}                    x        X coordinate of star center
-         * @param    {Number}                    y        Y coordinate of star center
-         * @param    {Number}                    radius   Star radius
-         * @param    {String}                    color    Star color in any form accepted by Canvas 2D API
-         * @returns  {CanvasRenderingContext2D}           The drawing context initially passed in
-         */
-
-    }, {
-        key: 'drawStar',
-        value: function drawStar(context, x, y, radius, color) {
-
-            // Draw 4 arcs with star center as the reference point and fill the resulting figure
-            context.beginPath();
-            context.moveTo(x, y - radius);
-            context.quadraticCurveTo(x, y, x + radius, y);
-            context.quadraticCurveTo(x, y, x, y + radius);
-            context.quadraticCurveTo(x, y, x - radius, y);
-            context.quadraticCurveTo(x, y, x, y - radius);
-            context.closePath();
-            context.fillStyle = color;
-            context.fill();
-            return context;
-        }
-
-        /**
-         * Draws a shaded 4-pointed star on a canvas.
-         *
-         * @param    {CanvasRenderingContext2D}  context     Canvas context to draw in
-         * @param    {Number}                    x           X coordinate of star center
-         * @param    {Number}                    y           Y coordinate of star center
-         * @param    {Number}                    radius      Star radius
-         * @param    {Number}                    hue         Color hue, integer 0..360
-         * @param    {Number}                    saturation  Color saturation, integer 0..100
-         * @param    {Number}                    lightness   Color lightness, integer 0..100
-         * @param    {Number}                    shadeCount  Number of drawing steps
-         * @returns  {CanvasRenderingContext2D}              The drawing context initially passed in
-         */
-
-    }, {
-        key: 'drawShadedStar',
-        value: function drawShadedStar(context, x, y, radius, hue, saturation, lightness, shadeCount) {
-
-            // Draw shadeCount stars of decreasing radius, from transparent to opaque
-            for (var shadeIndex = shadeCount; shadeIndex > 0; shadeIndex--) {
-                Util.drawStar(context, // Drawing context
-                x, // X position
-                y, // Y position
-                shadeIndex / shadeCount * radius, // Radius
-                'hsla(' + hue + ', ' + saturation + '%, ' + lightness + '%, ' + (shadeCount - shadeIndex + 1) / shadeCount + ')' // Color
-                );
-            }
-            return context;
-        }
-
-        /**
-         * Fills a canvas with stars.
-         * @param    {CanvasRenderingContext2D}  context              Canvas context to draw in
-         * @param    {Number}                    starCount            Number of stars to draw
-         * @param    {Number}                    radius               Star radius
-         * @param    {Number}                    radiusVariation      Maximum absolute deviation from radius
-         * @param    {Number}                    hue                  Color hue, integer 0..360
-         * @param    {Number}                    hueVariation         Maximum absolute deviation from hue
-         * @param    {Number}                    saturation           Color saturation, integer 0..100
-         * @param    {Number}                    saturationVariation  Maximum absolute deviation from saturation
-         * @returns  {CanvasRenderingContext2D}                       The drawing context initially passed in
-         */
-
-    }, {
-        key: 'drawStarField',
-        value: function drawStarField(context, starCount, radius, radiusVariation, hue, hueVariation, saturation, saturationVariation) {
-
-            // Draw shaded stars one by one, applying random variation in hue, saturation and radius
-            var fieldWidth = context.canvas.clientWidth;
-            var fieldHeight = context.canvas.clientHeight;
-            for (var starIndex = 0; starIndex < starCount; starIndex++) {
-                Util.drawShadedStar(context, // Drawing context
-                Math.random() * fieldWidth, // X position
-                Math.random() * fieldHeight, // Y position
-                radius + (Math.random() - 0.5) * radiusVariation * 2, // Radius
-                hue + (Math.random() - 0.5) * hueVariation * 2, // Hue
-                saturation + (Math.random() - 0.5) * saturationVariation * 2, // Saturation
-                50 + (Math.random() - 0.5) * 100, // Lightness
-                3 // Shades per star
-                );
-            }
-            return context;
-        }
-    }]);
-
-    return Util;
-}();
-
-exports.default = Util;
-
-},{}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
