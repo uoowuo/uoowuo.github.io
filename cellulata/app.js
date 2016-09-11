@@ -103014,7 +103014,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         globals.cellulata = new _cellulata2.default(scene);
     });
 })(self); /**
-           * Cellulata, v0.2.1
+           * Cellulata, v0.3.1
            *
            * Description: A cellular automata game.
            */
@@ -103049,6 +103049,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
  * Represents a single generic simulation cell.
+ * @todo a bug in Phaser perhaps causes every first cell in an animation to stretch 1 pixel left and overlap its neighbour
+ * @todo the bug disappears if a filter is applied to the cell
  */
 var Cell = function () {
 
@@ -103086,8 +103088,17 @@ var Cell = function () {
         this.integrity = integrity;
         this.spriteKey = spriteKey;
 
-        // Enable sprite and animations
+        // Add sprite, enable input
         this.sprite = cellulata.game.add.sprite(0, 0, this.spriteKey);
+        this.sprite.smoothed = false;
+        this.sprite.filters = this.sprite.filters || [];
+        this.sprite.filters = this.sprite.filters.concat(cellulata.filters.transparentBorder);
+        this.sprite.inputEnabled = true;
+        this.sprite.events.onInputOver.add(this.handleHover, this);
+        this.sprite.events.onInputOut.add(this.handleHover.bind(this, false), this);
+
+        // Enable idle animation
+        // @todo there is a bug whereby first animation frame overlaps the neighbouring tile by 1 pixel on the left
         if (this.sprite.animations.frameTotal > 1) {
             var animationStaggerDelay = Math.floor(Math.random() * cellulata.animationsStaggerRange);
             this.staggerTimeoutHandle = setTimeout(function () {
@@ -103115,6 +103126,32 @@ var Cell = function () {
 
             this.sprite.x = this.x * this.sprite.width;
             this.sprite.y = this.y * this.sprite.height;
+        }
+
+        /**
+         * Handles onhover functionality
+         * 
+         * @param  {Boolean}  enable  Whether to enable functionality (or disable) 
+         */
+
+    }, {
+        key: 'handleHover',
+        value: function handleHover() {
+            var enable = arguments.length <= 0 || arguments[0] === undefined ? true : arguments[0];
+
+
+            // On hover, highlight the cell. Array.push breaks PIXI for some reason
+            if (enable) {
+                this.sprite.filters = this.sprite.filters || [];
+                this.sprite.filters = this.sprite.filters.concat(cellulata.filters.transparentBorder);
+
+                // On hover out, remove cell highlight
+            } else {
+                this.sprite.filters.splice(this.sprite.filters.indexOf(cellulata.filters.transparentBorder), 1);
+                if (this.sprite.filters.length === 0) {
+                    this.sprite.filters = undefined;
+                }
+            }
         }
     }]);
 
@@ -103473,7 +103510,7 @@ var Algae = exports.Algae = function (_Life) {
     return Algae;
 }(Life);
 
-},{"./enums":8,"./speed":11}],7:[function(require,module,exports){
+},{"./enums":8,"./speed":12}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -103493,6 +103530,10 @@ var _grid2 = _interopRequireDefault(_grid);
 var _cell = require('./cell');
 
 var Cell = _interopRequireWildcard(_cell);
+
+var _shaders = require('./shaders');
+
+var _shaders2 = _interopRequireDefault(_shaders);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -103575,6 +103616,7 @@ var Cellulata = function () {
                 (_game$load = this.game.load)[loaderFunc].apply(_game$load, [assetName, assetPaths[i]].concat(loaderArgs));
                 assetKeys.push(assetName);
             }
+
             return assetKeys;
         }
 
@@ -103590,11 +103632,22 @@ var Cellulata = function () {
             this.game.tweens.frameBased = true;
             this.game.stage.disableVisibilityChange = true;
 
+            // Setup filters
+            // this.uniforms = {
+            //     assetsCellWidth: this.assetsCellSize,
+            //     assetsCellHeight: this.assetsCellSize
+            // };
+            this.filters = {};
+            this.filters.highlight = new Phaser.Filter(this.game, this.uniforms, _shaders2.default.highlight);
+            this.filters.transparentBorder = new Phaser.Filter(this.game, this.uniforms, _shaders2.default.transparentBorder);
+            this.filters.transparentBorder.setResolution(this.assetsCellSize, this.assetsCellSize);
+
             // Create and populate the world
             this.world = new _world2.default(this.worldSize);
 
             // Set background
-            this.game.add.sprite(0, 0, 'background');
+            this.background = this.game.add.sprite(0, 0, 'background');
+            this.background.smoothed = false;
 
             // Generate cells grid
             var maxIndexX = this.world.width - 1;
@@ -103633,12 +103686,10 @@ var Cellulata = function () {
         key: 'mainLoop',
         value: function mainLoop() {
 
-            // Wrap reel symbols
-            // this.reels.forEach((reel) => {
-            //     reel.symbols.forEach((symbol) => {
-            //         this.game.world.wrap(symbol.gameObject);
-            //     });
-            // });
+            // Update filters
+            for (var filter in this.filters) {
+                this.filters[filter].update(this.game.input.activePointer);
+            }
         }
     }]);
 
@@ -103647,7 +103698,7 @@ var Cellulata = function () {
 
 exports.default = Cellulata;
 
-},{"./cell":6,"./grid":10,"./world":13,"phaser/build/custom/p2":1,"phaser/build/custom/phaser-split":2,"phaser/build/custom/pixi":3}],8:[function(require,module,exports){
+},{"./cell":6,"./grid":10,"./shaders":11,"./world":14,"phaser/build/custom/p2":1,"phaser/build/custom/phaser-split":2,"phaser/build/custom/pixi":3}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -103849,6 +103900,79 @@ exports.default = Grid;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Contains fragment (pixel) shaders for visual effects
+ */
+var Shaders = function Shaders() {
+    _classCallCheck(this, Shaders);
+};
+
+///////////////
+// Libraries //
+///////////////
+
+/**
+ * Shader library code
+ * @type  {Object}
+ */
+
+
+exports.default = Shaders;
+Shaders.libs = {};
+
+/**
+ * That number, you know
+ */
+Shaders.libs.PI = "\n    #define PI 3.1415926535897932384626433832795\n";
+
+////////////////////
+// Pixel shaders //
+///////////////////
+
+/**
+ * Slight white-tinted overlay
+ */
+Shaders.highlight = "\n    precision mediump float;\n\n    uniform sampler2D uSampler;\n    varying vec2 vTextureCoord;\n    \n    void main() {\n        \n        vec4 texture = texture2D(uSampler, vTextureCoord);\n        \n        // Output\n        gl_FragColor = mix(texture, vec4(1.0, 1.0, 1.0, 1.0), 0.25);\n    }\n";
+
+/**
+ * White-tinted transparent border
+ */
+Shaders.transparentBorder = "\n    precision mediump float;\n\n    uniform vec2 resolution;\n    uniform sampler2D uSampler;\n    varying vec2 vTextureCoord;\n    \n    void main() {\n        \n        const float borderWidth = 2.0;\n        const vec4 borderColor = vec4(1.0, 1.0, 1.0, 1.0);\n        \n        // If within border, mix with preset color\n        vec4 texture = texture2D(uSampler, vTextureCoord);\n        if (gl_FragCoord.y >= resolution.y - 1.0 - borderWidth ||  // Top\n            gl_FragCoord.x >= resolution.x - 1.0 - borderWidth ||  // Right\n            gl_FragCoord.y <= borderWidth ||                       // Bottom\n            gl_FragCoord.x <= borderWidth                          // Left\n        ) {\n            gl_FragColor = mix(texture, borderColor, 0.25);\n        } else {\n            gl_FragColor = texture;\n        }\n    }\n";
+//
+// /**
+//  * White-tinted transparent border
+//  */
+// Shaders.transparentBorder = `
+//     precision mediump float;
+//
+//     uniform vec2 resolution;
+//     uniform sampler2D uSampler;
+//     varying vec2 vTextureCoord;
+//
+//     void main() {
+//
+//         const float borderWidth = 1.0;
+//         const vec4 borderColor = vec4(1.0, 1.0, 1.0, 1.0);
+//
+//         // If within border, mix with preset color
+//         vec4 texture = texture2D(uSampler, vTextureCoord);
+//         if (gl_FragCoord.x >= 1.0) {
+//             gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+//         } else {
+//             gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+//         }
+//     }
+// `;
+
+},{}],12:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
@@ -103880,7 +104004,7 @@ exports.default = Speed;
 
 Speed.zero = new Speed(0, 0);
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -103915,7 +104039,7 @@ function Sun() {
 
 exports.default = Sun;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -103970,4 +104094,4 @@ function World() {
 
 exports.default = World;
 
-},{"./cell":6,"./gravity":9,"./grid":10,"./sun":12}]},{},[5]);
+},{"./cell":6,"./gravity":9,"./grid":10,"./sun":13}]},{},[5]);
