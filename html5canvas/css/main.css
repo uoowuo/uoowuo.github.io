@@ -1,0 +1,50 @@
+/* General */
+html, body {
+    overflow: hidden;
+    font:16px 'sans serif';
+    padding: 0;
+    margin: 0;
+}
+body {
+    background: #272727;
+}
+
+/* Main UI area */
+.mainArea {
+    height: 100vh;
+}
+
+/* Canvas */
+canvas {
+    image-rendering: optimizeSpeed;             /* Older versions of FF */
+    image-rendering: -moz-crisp-edges;          /* FF 6.0+ */
+    image-rendering: -webkit-optimize-contrast; /* Safari */
+    image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+    image-rendering: pixelated;                 /* Awesome future-browsers */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE */
+}
+canvas.mainSurface {
+    width: 100%; /*will have to part with that*/
+    height: 100%;
+}
+
+/* Loading indicator */
+.loadingIndicator {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -105px 0 0 -85px;
+    z-index: -1;
+}
+.loadingIndicator:before {
+    content: url('../images/loading-indicator-icon.png');
+}
+.loadingIndicator:after {
+    content: 'AWAIT.';
+    position: absolute;
+    left: 50%;
+    bottom: -0.75em;
+    margin: 0 0 0 -2em;
+    font: bold 2.2rem 'sans serif';
+    color: black;
+}
