@@ -1,2 +1,4 @@
+- [Slot machine >>](http://uoowuo.github.io/slotmachine/)
 - [Audio visualizer >>](http://uoowuo.github.io/sonografi/)
+- [AVR LED controller >>](http://uoowuo.github.io/avr-ledcontrol/)
 - [Genetic demo >>](http://uoowuo.github.io/genetic/)
