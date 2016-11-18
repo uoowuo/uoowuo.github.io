@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Kaufland test</title>
+        <meta name="description" content="A test for Kaufland.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="./images/favicon.png" rel="SHORTCUT ICON" type="image/png">
+        <link rel="stylesheet" href="./styles/main.css">
+    </head>
+    <body id="top">
+
+        <!-- Static navbar -->
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Web store</a>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown">
+                            <a data-toggle="dropdown" data-submenu
+                               data-hover="dropdown" data-delay="1000" data-close-others="true">
+                                Products<span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="dropdown-submenu">
+                                    <a href="#food">Food</a>
+
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#meat">Meat</a></li>
+                                        <li><a href="#vegetables">Vegetables</a></li>
+                                        <li><a href="#fruit">Fruit</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown-submenu">
+                                    <a href="#electronics">Clothes</a>
+
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#pajamas">Pajamas</a></li>
+                                        <li><a href="#more-pajamas">More pajamas</a></li>
+                                        <li><a href="#slippers">Slippers</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown-submenu">
+                                    <a href="#electronics">Electronics</a>
+
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#notebooks">Notebooks</a></li>
+                                        <li><a href="#smartphones">Smartphones</a></li>
+                                        <li><a href="#accessories">Accessories</a></li>
+                                    </ul>
+                                </li>
+                                <li class="divider"></li>
+                                <li><a href="#products">See all</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+
+
+        <div class="main-area container-fluid">
+            <div class="row row-sm-flex">
+                <div class="content-area col-xs-12 col-sm-fill" id="content-area">
+                    <p>Loading posts...</p>
+                </div>
+                <div class="sidebar col-xs-12 col-sm-fixed100 pull-right">
+                    <p>Sidebar</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <p>Footer</p>
+            </div>
+        </footer>
+
+        <script src="./app.js"></script>
+    </body>
+</html>
