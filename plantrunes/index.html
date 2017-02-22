@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Plantrunes</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style type="text/css">
+            /* Reset */
+            * {
+                box-sizing: border-box;
+                -moz-box-sizing: border-box;
+            }
+
+            /* General */
+            html, body {
+                font: 16px Arial, "Helvetica Neue", Helvetica, sans-serif;
+                padding: 0;
+                margin: 0;
+            }
+            body {
+                position: relative;
+                background: white;
+                min-height: 320px;
+            }
+
+            /* Gallery */
+            .gallery {
+                width: 100%;
+                max-width: 1080px;
+                max-height: 720px;
+                margin: 0 auto;
+                padding: 0.5em 1em;
+            }
+            .gallery figure {
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: center;
+                align-items: center;
+            }
+            .gallery a {
+                order: 2;
+                display: inline-block;
+                width: 48%;
+                margin: 0.25em 0.5%;
+            }
+            .gallery a.wide {
+                width: 100%;
+            }
+            .gallery img {
+                display: block;
+                width: 100%;
+            }
+            .gallery figcaption {
+                order: 1;
+                width: 100%;
+                flex-basis: 100%;
+                padding: 0.5em 1em;
+                align-self: center;
+                text-align: center;
+            }
+            .gallery figcaption:after {
+                content: ":";
+            }
+        </style>
+    </head>
+    <body id="top">
+        <article class="gallery">
+            <figure>
+                <a href="./setup.jpg" title="Single glass jar"><img src="./setup.jpg" alt="Single glass jar"></a>
+                <a href="./setup2.jpg" title="The whole setup at an angle"><img src="./setup2.jpg" alt="The whole setup at an angle"></a>
+                <a class="wide" href="./setup3.jpg" title="The whole setup"><img src="./setup3.jpg" alt="The whole setup"></a>
+                <figcaption>The physical setup</figcaption>
+            </figure>
+            <figure>
+                <a class="wide" href="./log.jpg" title="Usage"><img src="./log.jpg" alt="Usage"></a>
+                <a class="wide" href="./log2.jpg" title="Later usage"><img src="./log2.jpg" alt="Later usage"></a>
+                <figcaption>Writing system usage</figcaption>
+            </figure>
+            <figure>
+                <a href="./legend.jpg" title="Legend"><img src="./legend.jpg" alt="Legend"></a>
+                <a href="./examples.jpg" title="Examples"><img src="./examples.jpg" alt="Examples"></a>
+                <figcaption>Legend & examples</figcaption>
+            </figure>
+        </article>
+    </body>
+</html>
