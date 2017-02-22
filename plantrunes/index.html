@@ -33,56 +33,106 @@
                 margin: 0 auto;
                 padding: 0.5em 1em;
             }
-            .gallery figure {
+            .gallery section{
                 display: flex;
                 flex-flow: row wrap;
-                justify-content: center;
-                align-items: center;
+                justify-content: space-between;
+                align-items: stretch;
+                margin: 0.5em 0.5em;
             }
-            .gallery a {
+            .gallery figure {
                 order: 2;
                 display: inline-block;
-                width: 48%;
+                width: 49%;
                 margin: 0.25em 0.5%;
             }
-            .gallery a.wide {
+            .gallery figure.wide {
                 width: 100%;
+            }
+            .gallery a {
+                display: block;
             }
             .gallery img {
                 display: block;
                 width: 100%;
             }
-            .gallery figcaption {
-                order: 1;
+            .gallery h1 {
                 width: 100%;
                 flex-basis: 100%;
-                padding: 0.5em 1em;
+                margin: 0.5em 1em;
                 align-self: center;
                 text-align: center;
+                font-size: medium;
             }
-            .gallery figcaption:after {
+            .gallery h1:after {
                 content: ":";
+            }
+            .gallery figcaption {
+                width: 100%;
+                padding: 0.5em 0;
+            }
+            .gallery blockquote {
+                position: relative;
+            }
+            .gallery blockquote:before {
+                content: "\201C";
+                position: absolute;
+                top: 0;
+                left: -0.5em;
+                font-size: 4em;
+                line-height: 0.75em;
+                opacity: 0.25;
             }
         </style>
     </head>
     <body id="top">
         <article class="gallery">
-            <figure>
-                <a href="./setup.jpg" title="Single glass jar"><img src="./setup.jpg" alt="Single glass jar"></a>
-                <a href="./setup2.jpg" title="The whole setup at an angle"><img src="./setup2.jpg" alt="The whole setup at an angle"></a>
-                <a class="wide" href="./setup3.jpg" title="The whole setup"><img src="./setup3.jpg" alt="The whole setup"></a>
-                <figcaption>The physical setup</figcaption>
-            </figure>
-            <figure>
-                <a class="wide" href="./log.jpg" title="Usage"><img src="./log.jpg" alt="Usage"></a>
-                <a class="wide" href="./log2.jpg" title="Later usage"><img src="./log2.jpg" alt="Later usage"></a>
-                <figcaption>Writing system usage</figcaption>
-            </figure>
-            <figure>
-                <a href="./legend.jpg" title="Legend"><img src="./legend.jpg" alt="Legend"></a>
-                <a href="./examples.jpg" title="Examples"><img src="./examples.jpg" alt="Examples"></a>
-                <figcaption>Legend & examples</figcaption>
-            </figure>
+            <section>
+                <h1>Physical setup</h1>
+                <figure>
+                    <a href="./setup.jpg" title="Single glass jar"><img src="./setup.jpg" alt="Single glass jar"></a>
+                </figure>
+                <figure>
+                    <a href="./setup2.jpg" title="The whole setup"><img src="./setup2.jpg" alt="The whole setup"></a>
+                </figure>
+            </section>
+            <section>
+                <h1>Writing system usage</h1>
+                <figure class="wide">
+                    <a href="./log.jpg" title="Usage"><img src="./log.jpg" alt="Usage"></a>
+                </figure>
+                <figure class="wide">
+                    <a href="./log2.jpg" title="Later usage"><img src="./log2.jpg" alt="Later usage"></a>
+                    <figcaption>
+                        <p>For each jar numbered 1-7 there is a timestrip consisting of compound symbols of the writing system.
+                            If connected with colored lines, the marks form crude time graphs describing how various values changed in time.</p>
+                    </figcaption>
+                </figure>
+            </section>
+            <section>
+                <h1>Legend & examples</h1>
+                <figure>
+                    <a href="./legend.jpg" title="Legend"><img src="./legend.jpg" alt="Legend"></a>
+                    <figcaption>
+                        <blockquote>
+                            <p>Water level</p>
+                            <p>Light</p>
+                            <p>Temperature</p>
+                            <p>Events</p>
+                        </blockquote>
+                    </figcaption>
+                </figure>
+                <figure>
+                    <a href="./examples.jpg" title="Examples"><img src="./examples.jpg" alt="Examples"></a>
+                    <figcaption>
+                        <blockquote>
+                            <p>Planted 1 g of Dikovina rocket salad, low natural lighting, temperature 24-32 &deg;C</p>
+                            <p>Bright artificial lighting for 24 hours, 400-500 mL in the watering bottle</p>
+                            <p>Germinated, 100-200 mL in the watering bottle, temperature 16-24 &deg;C</p>
+                        </blockquote>
+                    </figcaption>
+                </figure>
+            </section>
         </article>
     </body>
 </html>
